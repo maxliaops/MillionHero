@@ -37,7 +37,14 @@ public class SearchAndOpen implements Callable {
 //                System.out.println(decodeUnicode(line));
 ////                printJson(line);
 //            }
-//判断当前系统是否支持Java AWT Desktop扩展
+
+            //获取操作系统的名字
+            String osName = System.getProperty("os.name", "");
+            if (osName.startsWith("Windows")) {
+                //windows的打开方式。
+                Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + path);
+            } else {
+            //判断当前系统是否支持Java AWT Desktop扩展
             if (java.awt.Desktop.isDesktopSupported()) {
                 try {
                     //创建一个URI实例,注意不是URL
@@ -55,17 +62,7 @@ public class SearchAndOpen implements Callable {
                     //此为无法获取系统默认浏览器
                 }
             }
-            //获取操作系统的名字
-//            String osName = System.getProperty("os.name", "");
-//            if (osName.startsWith("Mac OS")) {
-//                //苹果的打开方式
-//                Class fileMgr = Class.forName("com.apple.eio.FileManager");
-//                Method openURL = fileMgr.getDeclaredMethod("openURL", new Class[]{String.class});
-//                openURL.invoke(null, new Object[]{path});
-//            } else if (osName.startsWith("Windows")) {
-//                //windows的打开方式。
-//                Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + path);
-//            }
+            }
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
