@@ -1,3 +1,5 @@
+package me.lingfengsan.hero;
+
 import net.sourceforge.tess4j.ITesseract;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
@@ -18,7 +20,7 @@ public class TessOCR {
         //Set the tessdata path
         instance.setDatapath(tessDataFolder.getAbsolutePath());
         try {
-            Rectangle rectangle = new Rectangle(100, 300, 900, 900);
+            Rectangle rectangle = new Rectangle(67, 200, 600, 600);
             return instance.doOCR(imageFile,rectangle)
                     .replace(" ",".").replace(",","");
         } catch (TesseractException e) {

@@ -1,3 +1,5 @@
+package me.lingfengsan.hero;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -12,8 +14,8 @@ public class Phone {
     /**
      * 此处应更改为自己的adb目录
      */
-    private static final String ADB_PATH = "D:\\software\\Android\\android-sdk\\platform-tools\\adb";
-    private static final String HERO_PATH = "D:\\Photo";
+    private static final String ADB_PATH = "/opt/Java/android-sdk-linux/platform-tools/adb";
+    private static final String HERO_PATH = "/home/maxliaops/workspace/workspace4java/MillionHero/Photo";
 
     File getImage() {
         //获取当前时间作为名字
@@ -21,16 +23,17 @@ public class Phone {
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
         String curDate = df.format(current);
         File curPhoto = new File(HERO_PATH, curDate + ".png");
+        Process process = null;
         //截屏存到手机本地
         try {
             while(!curPhoto.exists()) {
-                Runtime.getRuntime().exec(ADB_PATH
+                process = Runtime.getRuntime().exec(ADB_PATH
                         + " shell /system/bin/screencap -p /sdcard/screenshot.png");
-                Thread.sleep(700);
+                process.waitFor();
                 //将截图放在电脑本地
-                Runtime.getRuntime().exec(ADB_PATH
+                process = Runtime.getRuntime().exec(ADB_PATH
                         + " pull /sdcard/screenshot.png " + curPhoto.getAbsolutePath());
-                Thread.sleep(200);
+                process.waitFor();
             }
             //返回当前图片名字
             return curPhoto;
