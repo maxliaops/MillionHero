@@ -14,8 +14,8 @@ public class Phone {
     /**
      * 此处应更改为自己的adb目录
      */
-    private static final String ADB_PATH = "/opt/Java/android-sdk-linux/platform-tools/adb";
-    private static final String HERO_PATH = "/home/maxliaops/workspace/workspace4java/MillionHero/Photo";
+    private static final String ADB_PATH = "C:\\Program Files (x86)\\Android\\adt-bundle-windows-x86-20131030\\sdk\\platform-tools\\adb.exe";
+    private static final String HERO_PATH = "D:\\workspace\\thirdparty\\Photo";
 
     File getImage() {
         //获取当前时间作为名字
