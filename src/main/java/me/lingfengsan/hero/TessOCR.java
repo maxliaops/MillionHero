@@ -36,11 +36,11 @@ public class TessOCR {
         //Set the tessdata path
         instance.setDatapath(tessDataFolder.getAbsolutePath());
         try {
-            int x = 67 * width / 720;
-            int y = 200 * height / 1280;
-            int w = 600 * width / 720;
-            int h = 600 * height / 1280;
-            Rectangle rectangle = new Rectangle(x, y, w, h);
+//            int x = 67 * width / 720;
+//            int y = 200 * height / 1280;
+//            int w = 600 * width / 720;
+//            int h = 600 * height / 1280;
+            Rectangle rectangle = new Rectangle(67, 200, 600, 600);
             return instance.doOCR(imageFile,rectangle)
                     .replace(" ",".").replace(",","");
         } catch (TesseractException e) {

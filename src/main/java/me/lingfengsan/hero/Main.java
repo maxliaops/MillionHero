@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
@@ -16,22 +17,27 @@ import java.util.concurrent.FutureTask;
  */
 public class Main {
     private static final int NUM_OF_ANSWERS = 3;
-    private static final String QUESTION_FLAG="?";
+    private static final String QUESTION_FLAG = "?";
 
     public static void main(String[] args) throws IOException {
-        BufferedReader bf=new BufferedReader(new InputStreamReader(System.in));
+        BufferedReader bf = new BufferedReader(new InputStreamReader(System.in));
 
         while (true) {
-            String str=bf.readLine();
-            System.out.println("开始执行");
+//            String str = bf.readLine();
+//            System.out.println("开始执行");
+//            try {
+//                if (str.length() == 0) {
+//                    run();
+//                }
+//            } catch (Exception e) {
+//                System.out.println("error");
+//            }
+
             try {
-                if(str.length()==0){
-                    run();
-                }
+                run();
             } catch (Exception e) {
                 System.out.println("error");
             }
-
         }
     }
 
@@ -41,27 +47,35 @@ public class Main {
 //       记录结束时间
         long endTime;
         startTime = System.currentTimeMillis();
-        //获取图片
-        File image = new Phone().getImage();
-        System.out.println("获取图片成功" + image.getAbsolutePath());
-        //图像识别
-        Long beginOfDectect=System.currentTimeMillis();
-        String questionAndAnswers = new TessOCR().getOCR(image);
-        System.out.println("识别成功");
-        System.out.println("识别时间："+(System.currentTimeMillis()-beginOfDectect));
-        if(!questionAndAnswers.contains(QUESTION_FLAG)){
-            return;
+        InformationGetter informationGetter = new InformationGetter();
+        Question question2 = informationGetter.getQuestionAndAnswers();
+        System.out.println(question2.getQuestionId() + ". " + question2.getQuestionText());
+        List<Question.Option> options = question2.getOptions();
+        for(Question.Option option : options) {
+            System.out.println(option.getOptionText());
         }
-        //获取问题和答案
-        System.out.println("检测到题目");
-        Information information = new Information(questionAndAnswers);
-        String question = information.getQuestion();
-        String[] answers = information.getAns();
-        System.out.println("问题:" + question);
-        System.out.println("答案：");
-        for (String answer : answers) {
-            System.out.println(answer);
-        }
+//        //获取图片
+//        File image = new Phone().getImage();
+//        System.out.println("获取图片成功" + image.getAbsolutePath());
+//        //图像识别
+//        Long beginOfDectect=System.currentTimeMillis();
+//        String questionAndAnswers = new TessOCR().getOCR(image);
+//        System.out.println("识别成功");
+//        System.out.println("识别时间："+(System.currentTimeMillis()-beginOfDectect));
+//        if(!questionAndAnswers.contains(QUESTION_FLAG)){
+//            return;
+//        }
+//        //获取问题和答案
+//        System.out.println("检测到题目");
+//        Information information = new Information(questionAndAnswers);
+//        String question = information.getQuestion();
+//        String[] answers = information.getAns();
+//        System.out.println("问题: " + question);
+//        System.out.println("答案：");
+//        for (String answer : answers) {
+//            System.out.println(answer);
+//        }
+
         //搜索
         long countQuestion = 1;
         long[] countQA = new long[3];
@@ -69,12 +83,13 @@ public class Main {
 
         int maxIndex = 0;
 
-        Search[] searchQA = new Search[3];
-        Search[] searchAnswers = new Search[3];
-        FutureTask<Long>[] futureQA = new FutureTask[NUM_OF_ANSWERS];
-        FutureTask<Long>[] futureAnswers = new FutureTask[NUM_OF_ANSWERS];
-        FutureTask<Long> futureQuestion = new FutureTask<Long>(new SearchAndOpen(question));
+//        Search[] searchQA = new Search[3];
+//        Search[] searchAnswers = new Search[3];
+//        FutureTask<Long>[] futureQA = new FutureTask[NUM_OF_ANSWERS];
+//        FutureTask<Long>[] futureAnswers = new FutureTask[NUM_OF_ANSWERS];
+        FutureTask<Long> futureQuestion = new FutureTask<Long>(new SearchAndOpen(question2));
         new Thread(futureQuestion).start();
+
 //        for (int i = 0; i < NUM_OF_ANSWERS; i++) {
 //            searchQA[i] = new Search(question + " " + answers[i]);
 //            searchAnswers[i] = new Search(answers[i]);
@@ -115,23 +130,22 @@ public class Main {
 //        System.out.println(answers[maxIndex]);
         endTime = System.currentTimeMillis();
         float excTime = (float) (endTime - startTime) / 1000;
-//
-        System.out.println("执行时间：" + excTime + "s");
+        System.out.println("---------------我是分隔符--------------");
+//        System.out.println("执行时间：" + excTime + "s");
     }
 
     /**
-     *
      * @param floats pmi值
      * @return 返回排序的rank
      */
-    private static int[] rank(float[] floats){
-        int[] rank=new int[NUM_OF_ANSWERS];
-        float[] f=Arrays.copyOf(floats,3);
+    private static int[] rank(float[] floats) {
+        int[] rank = new int[NUM_OF_ANSWERS];
+        float[] f = Arrays.copyOf(floats, 3);
         Arrays.sort(f);
         for (int i = 0; i < NUM_OF_ANSWERS; i++) {
             for (int j = 0; j < NUM_OF_ANSWERS; j++) {
-                if(f[i]==floats[j]){
-                    rank[i]=j;
+                if (f[i] == floats[j]) {
+                    rank[i] = j;
                 }
             }
         }

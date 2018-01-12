@@ -16,19 +16,19 @@ import java.util.concurrent.Callable;
  * @author lingfengsan
  */
 public class SearchAndOpen implements Callable {
-    private final String question;
+    private final Question question;
 
-    SearchAndOpen(String question) {
+    SearchAndOpen(Question question) {
         this.question = question;
     }
 
-    private Long searchAndOpen(String question) throws IOException {
+    private Long searchAndOpen(Question question) throws IOException {
         String path = null;
         try {
 //            path = "http://www.baidu.com/s?tn=ichuner&lm=-1&word=" +
 //                    URLEncoder.encode(question, "gb2312") + "&rn=20";
             path = "https://zhidao.baidu.com/search?lm=0&rn=10&pn=0&fr=search&ie=gbk&word=" +
-                    URLEncoder.encode(question, "gb2312");
+                    URLEncoder.encode(question.getQuestionText(), "gb2312");
 //            boolean findIt = false;
 //            String line = null;
 //            URL url = new URL(path);
@@ -67,7 +67,8 @@ public class SearchAndOpen implements Callable {
             e.printStackTrace();
         }
 //        Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + path);
-        return Long.valueOf(1);
+        return new Search(question).search(question);
+//        return Long.valueOf(1);
     }
 
     public static String decodeUnicode(String theString) {
@@ -184,10 +185,10 @@ public class SearchAndOpen implements Callable {
 
     }
 
-    public static void main(String[] args) throws Exception {
-        SearchAndOpen search = new SearchAndOpen("阿尔茨海默症又被称为什么?");
-        System.out.println(search.call());
-    }
+//    public static void main(String[] args) throws Exception {
+//        SearchAndOpen search = new SearchAndOpen("阿尔茨海默症又被称为什么?");
+//        System.out.println(search.call());
+//    }
 
     @Override
     public Long call() throws Exception {

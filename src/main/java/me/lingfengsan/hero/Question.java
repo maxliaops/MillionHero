@@ -1,5 +1,6 @@
 package me.lingfengsan.hero;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -35,7 +36,14 @@ public class Question {
         this.options = options;
     }
 
-    class Option {
+    public void addOption(Option option) {
+        if (this.options == null) {
+            this.options = new ArrayList<>();
+        }
+        this.options.add(option);
+    }
+
+    static class Option {
         int optionId;
         String optionText;
 
