@@ -55,9 +55,23 @@ public class InformationGetter {
 
             BufferedReader bufferedReader = new BufferedReader(
                     new InputStreamReader(process.getInputStream()));
-            String line;
+            String line = null;
             while (state != PARSE_PHASE_END) {
-                line = bufferedReader.readLine();
+                if (!Main.Debug) {
+                    line = bufferedReader.readLine();
+                } else {
+                    switch (state) {
+                        case PARSE_PHASE_START:
+                            line = test;
+                            break;
+                        case PARSE_PHASE_GET_QUESTION:
+                            line = test1;
+                            break;
+                        case PARSE_PHASE_GET_FIRST_OPTION:
+                            line = test2;
+                            break;
+                    }
+                }
                 if (line == null) continue;
 //                System.out.println(line);
                 switch (state) {
@@ -149,8 +163,7 @@ public class InformationGetter {
     private void onPhaseStart(String line) {
         if (line.contains("onReceiveHeartBeat") && line.contains("currentQuestionId") && !line
                 .contains("currentQuestionId: 0;") && (line.contains("status: 3; lastStatus: 4;")
-                || line.contains("status: 3; lastStatus: 2;")))
-        {
+                || line.contains("status: 3; lastStatus: 2;"))) {
             startTime = System.currentTimeMillis();
 //            System.out.println(line);
             int questionId = getQuestionId(line);

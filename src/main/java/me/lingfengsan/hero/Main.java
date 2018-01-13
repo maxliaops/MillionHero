@@ -17,26 +17,29 @@ import java.util.concurrent.FutureTask;
  */
 public class Main {
     private static final int NUM_OF_ANSWERS = 3;
+    public static final boolean Debug = true;
     private static final String QUESTION_FLAG = "?";
 
     public static void main(String[] args) throws IOException {
         BufferedReader bf = new BufferedReader(new InputStreamReader(System.in));
 
         while (true) {
-//            String str = bf.readLine();
-//            System.out.println("开始执行");
-//            try {
-//                if (str.length() == 0) {
-//                    run();
-//                }
-//            } catch (Exception e) {
-//                System.out.println("error");
-//            }
-
-            try {
-                run();
-            } catch (Exception e) {
-                System.out.println("error");
+            if (Debug) {
+                String str = bf.readLine();
+                System.out.println("开始执行");
+                try {
+                    if (str.length() == 0) {
+                        run();
+                    }
+                } catch (Exception e) {
+                    System.out.println("error");
+                }
+            } else {
+                try {
+                    run();
+                } catch (Exception e) {
+                    System.out.println("error");
+                }
             }
         }
     }
@@ -51,7 +54,7 @@ public class Main {
         Question question2 = informationGetter.getQuestionAndAnswers();
         System.out.println(question2.getQuestionId() + ". " + question2.getQuestionText());
         List<Question.Option> options = question2.getOptions();
-        for(Question.Option option : options) {
+        for (Question.Option option : options) {
             System.out.println(option.getOptionText());
         }
 //        //获取图片
