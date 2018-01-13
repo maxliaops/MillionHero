@@ -1,5 +1,8 @@
 package me.lingfengsan.hero;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -10,17 +13,10 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-
-import org.wltea.analyzer.lucene.IKAnalyzer;
 
 /**
  * Created by 618 on 2018/1/8.
@@ -35,12 +31,21 @@ public class Search implements Callable {
     }
 
     Long search(Question question) throws IOException {
+        long startTime = System.currentTimeMillis();
         String url = "https://zhidao.baidu.com/search?lm=0&rn=10&pn=0&fr=search&ie=gbk&word=" +
                 URLEncoder.encode(question.getQuestionText(), "gb2312");
         Document doc = Jsoup.parse(new URL(url).openStream(), "gb2312", url);
         String result = doc.text();
 //        String result = getUTF8BytesFromGBKString(temp);
-        System.out.println(result);
+//        System.out.println(result);
+        List<Question.Option> options = question.getOptions();
+        for(Question.Option option : options) {
+            int count = getCount(result, option.getOptionText());
+            System.out.println(option.getOptionText() + ": " + count);
+        }
+        long execTime = System.currentTimeMillis() - startTime;
+        System.out.println("搜索时间：" + execTime + "ms");
+        System.out.println("---------------我是分隔符--------------");
 //        IKAnalyzer analyzer = new IKAnalyzer();
 //        analyzer.setUseSmart(true);
 //        String test = "IKAnalyzer的分词效果到底怎么样呢，我们来看一下吧";
@@ -52,43 +57,38 @@ public class Search implements Callable {
         return Long.valueOf(1);
     }
 
-    private static void printAnalysisResult(Analyzer analyzer, String keyWord)
-            throws Exception {
-//        System.out.println("[" + keyWord + "]分词效果如下");
-        TokenStream tokenStream = analyzer.tokenStream("content",
-                new StringReader(keyWord));
-        tokenStream.addAttribute(CharTermAttribute.class);
-        while (tokenStream.incrementToken()) {
-            CharTermAttribute charTermAttribute = tokenStream
-                    .getAttribute(CharTermAttribute.class);
-            System.out.println(charTermAttribute.toString());
+    /*
+     * 两个明确： 返回值类型：int 参数列表：两个字符串
+     */
+    public static int getCount(String maxString, String minString) {
+        // 定义一个统计变量，初始化值是0
+        int count = 0;
 
+        /*
+        // 先在大串中查找一次小串第一次出现的位置
+        int index = maxString.indexOf(minString);
+        // 索引不是-1，说明存在，统计变量++
+        while (index != -1) {
+            count++;
+            // 把刚才的索引+小串的长度作为开始位置截取上一次的大串，返回一个新的字符串，并把该字符串的值重新赋值给大串
+            // int startIndex = index + minString.length();
+            // maxString = maxString.substring(startIndex);
+            maxString = maxString.substring(index + minString.length());
+            // 继续查
+            index = maxString.indexOf(minString);
         }
+        */
+
+        int index;
+        //先查，赋值，判断
+        while ((index = maxString.indexOf(minString)) != -1) {
+            count++;
+            maxString = maxString.substring(index + minString.length());
+        }
+
+        return count;
     }
-    //有损转换
-    public String getUTF8BytesFromGBKString(String gbkStr) throws UnsupportedEncodingException {
-        int n = gbkStr.length();
-        byte[] utfBytes = new byte[3 * n];
-        int k = 0;
-        for (int i = 0; i < n; i++) {
-            int m = gbkStr.charAt(i);
-            if (m < 128 && m >= 0) {
-                utfBytes[k++] = (byte) m;
-                continue;
-            }
-            utfBytes[k++] = (byte) (0xe0 | (m >> 12));
-            utfBytes[k++] = (byte) (0x80 | ((m >> 6) & 0x3f));
-            utfBytes[k++] = (byte) (0x80 | (m & 0x3f));
-        }
-        if (k < utfBytes.length) {
-            byte[] tmp = new byte[k];
-            System.arraycopy(utfBytes, 0, tmp, 0, k);
-            utfBytes = tmp;
 
-
-        }
-        return new String(utfBytes,"UTF-8");
-    }
     @Override
     public Long call() throws Exception {
         return search(question);

@@ -17,7 +17,7 @@ import java.util.concurrent.FutureTask;
  */
 public class Main {
     private static final int NUM_OF_ANSWERS = 3;
-    public static final boolean Debug = true;
+    public static final boolean Debug = false;
     private static final String QUESTION_FLAG = "?";
 
     public static void main(String[] args) throws IOException {
@@ -133,7 +133,7 @@ public class Main {
 //        System.out.println(answers[maxIndex]);
         endTime = System.currentTimeMillis();
         float excTime = (float) (endTime - startTime) / 1000;
-        System.out.println("---------------我是分隔符--------------");
+//        System.out.println("---------------我是分隔符--------------");
 //        System.out.println("执行时间：" + excTime + "s");
     }
 
