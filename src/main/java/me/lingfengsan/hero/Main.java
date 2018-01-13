@@ -93,6 +93,8 @@ public class Main {
         FutureTask<Long> futureQuestion = new FutureTask<Long>(new SearchAndOpen(question2));
         new Thread(futureQuestion).start();
 
+        FutureTask<Long> futureQuestion2 = new FutureTask<Long>(new Search(question2));
+        new Thread(futureQuestion2).start();
 //        for (int i = 0; i < NUM_OF_ANSWERS; i++) {
 //            searchQA[i] = new Search(question + " " + answers[i]);
 //            searchAnswers[i] = new Search(answers[i]);

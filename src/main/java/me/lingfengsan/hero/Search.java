@@ -39,6 +39,7 @@ public class Search implements Callable {
 //        String result = getUTF8BytesFromGBKString(temp);
 //        System.out.println(result);
         List<Question.Option> options = question.getOptions();
+        System.out.println();
         for(Question.Option option : options) {
             int count = getCount(result, option.getOptionText());
             System.out.println(option.getOptionText() + ": " + count);

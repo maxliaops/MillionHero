@@ -54,7 +54,7 @@ public class InformationGetter {
                     + " shell logcat -s FantasyLiveManager");
 
             BufferedReader bufferedReader = new BufferedReader(
-                    new InputStreamReader(process.getInputStream()));
+                    new InputStreamReader(process.getInputStream(),"utf-8"));
             String line = null;
             while (state != PARSE_PHASE_END) {
                 if (!Main.Debug) {
