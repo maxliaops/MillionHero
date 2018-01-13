@@ -3,6 +3,8 @@ package me.lingfengsan.hero;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -45,7 +47,7 @@ public class InformationGetter {
         int questionId = 0;
         state = PARSE_PHASE_START;
         optionCount = 0;
-        System.out.print("0->");
+//        System.out.print("0->");
         try {
             process = Runtime.getRuntime().exec(ADB_PATH
                     + " shell logcat -c");
@@ -54,7 +56,7 @@ public class InformationGetter {
                     + " shell logcat -s FantasyLiveManager");
 
             BufferedReader bufferedReader = new BufferedReader(
-                    new InputStreamReader(process.getInputStream(),"utf-8"));
+                    new InputStreamReader(process.getInputStream(), "utf-8"));
             String line = null;
             while (state != PARSE_PHASE_END) {
                 if (!Main.Debug) {
@@ -160,9 +162,43 @@ public class InformationGetter {
         return null;
     }
 
+    private List<Question.Option> getOptions(String line) {
+        List<Question.Option> options = new ArrayList<>();
+        String strPatter = "optionId: [0-9]+; text: ([\\s\\S]*); choosenUsers";
+        Pattern pattern = Pattern.compile(strPatter);
+        Matcher matcher = pattern.matcher(line);
+        while (matcher.find()) {
+            String str = matcher.group();
+//            System.out.println(str);
+        }
+        return options;
+    }
+
     private void onPhaseStart(String line) {
-        if (line.contains("onReceiveHeartBeat") && line.contains("currentQuestionId") && !line
-                .contains("currentQuestionId: 0;") && (line.contains("status: 3; lastStatus: 4;")
+        if (line.contains("onReceiveHeartBeat")
+                && line.contains("currentQuestionId")
+                && !line.contains("currentQuestionId: 0;")
+                && (line.contains("status: 3; lastStatus: 4;")
+                || line.contains("status: 3; lastStatus: 2;"))
+                && line.contains("optionList")
+                && line.contains("optionId")
+                && line.contains("percent0.0];")) {
+            startTime = System.currentTimeMillis();
+            int questionId = getQuestionId(line);
+            String questionText = getQuestionText(line);
+            question.setQuestionId(questionId);
+            question.setQuestionText(questionText);
+            state = PARSE_PHASE_GET_QUESTION;
+            System.out.print("1->");
+            List<Question.Option> options = getOptions(line);
+            question.setOptions(options);
+            optionCount = options.size();
+            state = PARSE_PHASE_END;
+            System.out.println("3");
+        } else if (line.contains("onReceiveHeartBeat")
+                && line.contains("currentQuestionId")
+                && !line.contains("currentQuestionId: 0;")
+                && (line.contains("status: 3; lastStatus: 4;")
                 || line.contains("status: 3; lastStatus: 2;"))) {
             startTime = System.currentTimeMillis();
 //            System.out.println(line);

@@ -8,9 +8,9 @@ import java.util.List;
  */
 
 public class Question {
-    int questionId;
-    String questionText;
-    List<Option> options;
+    private int questionId;
+    private String questionText;
+    private List<Option> options;
 
     public int getQuestionId() {
         return questionId;
@@ -44,8 +44,9 @@ public class Question {
     }
 
     static class Option {
-        int optionId;
-        String optionText;
+        private int optionId;
+        private String optionText;
+        private int count;
 
         public int getOptionId() {
             return optionId;
@@ -61,6 +62,14 @@ public class Question {
 
         public void setOptionText(String optionText) {
             this.optionText = optionText;
+        }
+
+        public int getCount() {
+            return count;
+        }
+
+        public void setCount(int count) {
+            this.count = count;
         }
     }
 }
