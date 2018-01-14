@@ -1,7 +1,11 @@
 package me.lingfengsan.hero;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import me.lingfengsan.hero.keyword.Keyword;
 
 /**
  * Created by lenovo on 2018/1/11.
@@ -47,6 +51,8 @@ public class Question {
         private int optionId;
         private String optionText;
         private int count;
+        private int count2;
+        private Map<String, Keyword> keywordMap;
 
         public int getOptionId() {
             return optionId;
@@ -70,6 +76,31 @@ public class Question {
 
         public void setCount(int count) {
             this.count = count;
+        }
+
+        public int getCount2() {
+            return count2;
+        }
+
+        public void setCount2(int count2) {
+            this.count2 = count2;
+        }
+
+        public List<Keyword> getKeywords() {
+            List<Keyword> keywords = new ArrayList<>();;
+            for (String keywordText : keywordMap.keySet()) {
+                keywords.add(keywordMap.get(keywordText));
+            }
+            return keywords;
+        }
+
+        public void setKeywords(List<Keyword> keywords) {
+            keywordMap = new HashMap<>();
+            for (Keyword keyword : keywords) {
+                String text = Search.getKeyword(keyword.getText());
+                keyword.setText(text);
+                keywordMap.put(text, keyword);
+            }
         }
     }
 }

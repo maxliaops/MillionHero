@@ -91,6 +91,9 @@ public class InformationGetter {
                         break;
                 }
             }
+            process.destroy();
+            int exitcode=process.waitFor();
+//            System.out.println("finish: "+exitcode);
             return question;
         } catch (IOException e) {
             e.printStackTrace();
@@ -189,12 +192,13 @@ public class InformationGetter {
             question.setQuestionId(questionId);
             question.setQuestionText(questionText);
             state = PARSE_PHASE_GET_QUESTION;
-            System.out.print("1->");
+//            System.out.print("1->");
+            System.out.println();
             List<Question.Option> options = getOptions(line);
             question.setOptions(options);
             optionCount = options.size();
             state = PARSE_PHASE_END;
-            System.out.println("3");
+            System.out.println();
         } else if (line.contains("onReceiveHeartBeat")
                 && line.contains("currentQuestionId")
                 && !line.contains("currentQuestionId: 0;")
@@ -208,7 +212,7 @@ public class InformationGetter {
             question.setQuestionId(questionId);
             question.setQuestionText(questionText);
             state = PARSE_PHASE_GET_QUESTION;
-            System.out.print("1->");
+            System.out.println();
 //            System.out.println("PARSE_PHASE_GET_QUESTION");
 
             if (line.contains("optionList") && line.contains("optionId")) {
@@ -221,7 +225,7 @@ public class InformationGetter {
                 question.addOption(option);
                 optionCount++;
                 state = PARSE_PHASE_GET_FIRST_OPTION;
-                System.out.print("2->");
+                System.out.println();
 //                System.out.println("PARSE_PHASE_GET_FIRST_OPTION");
             }
         }
@@ -238,7 +242,7 @@ public class InformationGetter {
             question.addOption(option);
             optionCount++;
             state = PARSE_PHASE_GET_FIRST_OPTION;
-            System.out.print("2->");
+            System.out.println();
 //            System.out.println("PARSE_PHASE_GET_FIRST_OPTION");
         }
     }
@@ -247,11 +251,11 @@ public class InformationGetter {
         if (line.contains("percent0.0];")) {
 //            System.out.println(line);
             state = PARSE_PHASE_END;
-            System.out.println("3");
+            System.out.println();
 //            System.out.println("PARSE_PHASE_END");
             endTime = System.currentTimeMillis();
             long excTime = endTime - startTime;
-            System.out.println("解析时间：" + excTime + "ms");
+//            System.out.println("解析时间：" + excTime + "ms");
         } else if (line.contains("optionId") && line.contains("text") && !line.contains
                 ("optionList")) {
 //            System.out.println(line);
@@ -264,11 +268,11 @@ public class InformationGetter {
             optionCount++;
             if (optionCount >= 3) {
                 state = PARSE_PHASE_END;
-                System.out.println("3");
+                System.out.println();
 //                System.out.println("PARSE_PHASE_END");
                 endTime = System.currentTimeMillis();
                 long excTime = endTime - startTime;
-                System.out.println("解析时间：" + excTime + "ms");
+//                System.out.println("解析时间：" + excTime + "ms");
             }
         }
     }

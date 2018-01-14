@@ -16,22 +16,24 @@ import java.util.concurrent.Callable;
  * @author lingfengsan
  */
 public class Search2 implements Callable {
-    private final String question;
-    private final String option;
+    private final Question question;
+    private final Question.Option option;
 
-    Search2(String question, String option) {
+    Search2(Question question, Question.Option option) {
         this.question = question;
         this.option = option;
 
     }
 
-    Long search(String question, String option) throws IOException {
+    Long search(Question question,  Question.Option option) throws IOException {
+        String questionText = question.getQuestionText();
+        String optionText = option.getOptionText();
         String url = "https://zhidao.baidu.com/search?lm=0&rn=10&pn=0&fr=search&ie=gbk&word=" +
-                URLEncoder.encode(question + " " + option, "gb2312");
+                URLEncoder.encode(questionText + " " + optionText, "gb2312");
         Document doc = Jsoup.parse(new URL(url).openStream(), "gb2312", url);
         String result = doc.text();
 //        System.out.println(result);
-        String keyword = Search.getKeyword(option);
+        String keyword = Search.getKeyword(optionText);
         int count = Search.getCount(result, keyword);
         if(count >= 1) {
             count--;
