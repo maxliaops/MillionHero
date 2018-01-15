@@ -79,15 +79,20 @@ public class Main {
         while (!futureQuestion0.isDone()) {
         }
         printResultHigh(question);
+        execTime = System.currentTimeMillis() - startTime;
+//        System.out.println("->H耗时: " + execTime + "毫秒");
 
         while (!futureQuestion3.isDone()) {
         }
         printResultMiddle(question);
+        execTime = System.currentTimeMillis() - startTime;
+//        System.out.println("->M耗时: " + execTime + "毫秒");
 
         while (!futureQuestion2.isDone()) {
         }
         printResultLow(question);
         execTime = System.currentTimeMillis() - startTime;
+//        System.out.println("->L耗时: " + execTime + "毫秒");
         System.out.println("答题总耗时: " + execTime + "毫秒");
     }
 
@@ -98,7 +103,10 @@ public class Main {
     private static void getKeywordsByBaidu(Question question) {
         List<Question.Option> options = question.getOptions();
         for (Question.Option option : options) {
+            long startTime = System.currentTimeMillis();
             List<Keyword> keywords = KeywordsApi.getInstance().getKeywords(option.getOptionText());
+            long execTime = System.currentTimeMillis() - startTime;
+//            System.out.println("耗时: " + execTime + "毫秒");
             option.setKeywords(keywords);
         }
         filterKeywords(question);

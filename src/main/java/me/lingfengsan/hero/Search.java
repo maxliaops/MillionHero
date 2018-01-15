@@ -53,6 +53,7 @@ public class Search implements Callable {
     }
 
     Long search(Question question) throws IOException {
+        long startTime = System.currentTimeMillis();
         String url = "https://zhidao.baidu.com/search?lm=0&rn=10&pn=0&fr=search&ie=gbk&word=" +
                 URLEncoder.encode(question.getQuestionText(), "gb2312");
         Document doc = Jsoup.parse(new URL(url).openStream(), "gb2312", url);
@@ -65,10 +66,13 @@ public class Search implements Callable {
                 keyword.setCount(count);
             }
         }
+        long execTime = System.currentTimeMillis() - startTime;
+//        System.out.println("H耗时: " + execTime + "毫秒");
         return Long.valueOf(1);
     }
 
     Long search3(Question question) throws IOException {
+        long startTime = System.currentTimeMillis();
         String url = "http://www.baidu.com/s?tn=ichuner&lm=-1&word=" +
                 URLEncoder.encode(question.getQuestionText(), "gb2312") + "&rn=50";
         Document doc = Jsoup.parse(new URL(url).openStream(), "utf-8", url);
@@ -81,6 +85,8 @@ public class Search implements Callable {
                 keyword.setCount2(count);
             }
         }
+        long execTime = System.currentTimeMillis() - startTime;
+//        System.out.println("M耗时: " + execTime + "毫秒");
         return Long.valueOf(1);
     }
 
@@ -202,7 +208,7 @@ public class Search implements Callable {
     Long search2(Question question) throws IOException {
         List<Question.Option> options = question.getOptions();
         int num_of_options = options.size();
-
+        long startTime = System.currentTimeMillis();
         long[] countQA = new long[num_of_options];
         Search2[] searchQA = new Search2[num_of_options];
         FutureTask<Long>[] futureQA = new FutureTask[num_of_options];
@@ -227,7 +233,8 @@ public class Search implements Callable {
         } catch (ExecutionException e) {
             e.printStackTrace();
         }
-
+        long execTime = System.currentTimeMillis() - startTime;
+//        System.out.println("3L耗时: " + execTime + "毫秒");
         return Long.valueOf(1);
     }
 

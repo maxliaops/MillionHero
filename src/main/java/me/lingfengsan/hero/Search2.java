@@ -26,11 +26,15 @@ public class Search2 implements Callable {
     }
 
     Long search(Question question,  Question.Option option) throws IOException {
+        long startTime = System.currentTimeMillis();
         String questionText = question.getQuestionText();
         String optionText = option.getOptionText();
-        String url = "https://zhidao.baidu.com/search?lm=0&rn=10&pn=0&fr=search&ie=gbk&word=" +
-                URLEncoder.encode(questionText + " " + optionText, "gb2312");
-        Document doc = Jsoup.parse(new URL(url).openStream(), "gb2312", url);
+//        String url = "https://zhidao.baidu.com/search?lm=0&rn=10&pn=0&fr=search&ie=gbk&word=" +
+//                URLEncoder.encode(questionText + " " + optionText, "gb2312");
+//        Document doc = Jsoup.parse(new URL(url).openStream(), "gb2312", url);
+        String url = "http://www.baidu.com/s?tn=ichuner&lm=-1&word=" +
+                URLEncoder.encode(questionText + " " + optionText, "gb2312") + "&rn=50";
+        Document doc = Jsoup.parse(new URL(url).openStream(), "utf-8", url);
         String result = doc.text();
 //        System.out.println(result);
         String keyword = Search.getKeyword(optionText);
@@ -38,6 +42,8 @@ public class Search2 implements Callable {
         if(count >= 1) {
             count--;
         }
+        long execTime = System.currentTimeMillis() - startTime;
+//        System.out.println("L耗时: " + execTime + "毫秒");
         return Long.valueOf(count);
     }
 
