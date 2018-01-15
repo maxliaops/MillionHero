@@ -28,6 +28,10 @@ public class KeywordsApi {
 
     public List<Keyword> getKeywords(String text) {
         List<Keyword> keywords = new ArrayList<>();
+        Keyword keyword2 = new Keyword();
+        keyword2.setText(text);
+        keywords.add(keyword2);
+
         Call<KeywordsResponse> call = keywordsService.getKeywords(text);
         try {
             Response<KeywordsResponse> response = call.execute();

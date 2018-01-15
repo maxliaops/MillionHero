@@ -87,7 +87,8 @@ public class Question {
         }
 
         public List<Keyword> getKeywords() {
-            List<Keyword> keywords = new ArrayList<>();;
+            List<Keyword> keywords = new ArrayList<>();
+            ;
             for (String keywordText : keywordMap.keySet()) {
                 keywords.add(keywordMap.get(keywordText));
             }
@@ -100,6 +101,20 @@ public class Question {
                 String text = Search.getKeyword(keyword.getText());
                 keyword.setText(text);
                 keywordMap.put(text, keyword);
+            }
+        }
+
+        public boolean containsKeyword(String keywordText) {
+            if (keywordMap.containsKey(keywordText)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        public void removeKeyword(String keywordText) {
+            if (keywordMap.containsKey(keywordText)) {
+                keywordMap.remove(keywordText);
             }
         }
     }

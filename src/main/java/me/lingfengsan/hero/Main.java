@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.FutureTask;
 
 import me.lingfengsan.hero.keyword.Keyword;
@@ -23,20 +24,21 @@ public class Main {
         System.out.println("开始执行");
         BufferedReader bf = new BufferedReader(new InputStreamReader(System.in));
 
+        Main main = new Main();
         while (true) {
             if (Debug) {
                 String str = bf.readLine();
                 System.out.println("开始执行");
                 try {
                     if (str.length() == 0) {
-                        run();
+                        main.run();
                     }
                 } catch (Exception e) {
                     System.out.println("error");
                 }
             } else {
                 try {
-                    run();
+                    main.run();
                 } catch (Exception e) {
                     System.out.println("error");
                 }
@@ -44,7 +46,7 @@ public class Main {
         }
     }
 
-    private static void run() throws InterruptedException {
+    private void run() throws InterruptedException {
 
         InformationGetter informationGetter = new InformationGetter();
         Question question = informationGetter.getQuestionAndAnswers();
@@ -54,10 +56,13 @@ public class Main {
             System.out.println(option.getOptionText());
         }
 
+        long startTime = System.currentTimeMillis();
         FutureTask<Long> futureQuestion = new FutureTask<Long>(new SearchAndOpen(question));
         new Thread(futureQuestion).start();
 
         getKeywordsByBaidu(question);
+        long execTime = System.currentTimeMillis() - startTime;
+        System.out.println("获取关键字耗时: " + execTime + "毫秒");
 
         FutureTask<Long> futureQuestion0 = new FutureTask<Long>(new Search(question));
         new Thread(futureQuestion0).start();
@@ -79,20 +84,51 @@ public class Main {
         while (!futureQuestion2.isDone()) {
         }
         printResultLow(question);
+        execTime = System.currentTimeMillis() - startTime;
+        System.out.println("答题总耗时: " + execTime + "毫秒");
     }
 
     private static void getKeywordsByBaidu(Question question) {
         List<Question.Option> options = question.getOptions();
         for (Question.Option option : options) {
             List<Keyword> keywords = KeywordsApi.getInstance().getKeywords(option.getOptionText());
-            if (keywords == null) {
-                keywords = new ArrayList<>();
-            }
-            Keyword keyword2 = new Keyword();
-            keyword2.setText(option.getOptionText());
-            keywords.add(keyword2);
-
             option.setKeywords(keywords);
+        }
+        filterKeywords(question);
+    }
+
+    private static void filterKeywords(Question question) {
+        List<Question.Option> options = question.getOptions();
+        for (Question.Option option : options) {
+            List<Keyword> keywords = option.getKeywords();
+            for (Keyword keyword : keywords) {
+                String keywordText = keyword.getText();
+                if (isCommonKeyword(keywordText, question)) {
+                    removeCommonKeyword(keywordText, question);
+                }
+            }
+        }
+    }
+
+    private static void removeCommonKeyword(String keywordText, Question question) {
+        List<Question.Option> options = question.getOptions();
+        for (Question.Option option : options) {
+            option.removeKeyword(keywordText);
+        }
+    }
+
+    private static boolean isCommonKeyword(String keywordText, Question question) {
+        int count = 0;
+        List<Question.Option> options = question.getOptions();
+        for (Question.Option option : options) {
+            if (option.containsKeyword(keywordText)) {
+                count++;
+            }
+        }
+        if (count >= 3) {
+            return true;
+        } else {
+            return false;
         }
     }
 
