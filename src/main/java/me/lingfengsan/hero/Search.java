@@ -210,7 +210,8 @@ public class Search implements Callable {
             Question.Option option = options.get(i);
             searchQA[i] = new Search2(question, option);
             futureQA[i] = new FutureTask<Long>(searchQA[i]);
-            new Thread(futureQA[i]).start();
+//            new Thread(futureQA[i]).start();
+            Main.getExecutorService().submit(futureQA[i]);
         }
 
         try {

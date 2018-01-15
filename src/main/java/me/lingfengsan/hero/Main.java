@@ -6,6 +6,8 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 
 import me.lingfengsan.hero.keyword.Keyword;
@@ -18,6 +20,7 @@ import me.lingfengsan.hero.keyword.KeywordsApi;
  */
 public class Main {
     public static final boolean Debug = false;
+    private static ExecutorService executorService = Executors.newCachedThreadPool();
 
     public static void main(String[] args) throws IOException {
         System.out.println("---------------------------------------------------");
@@ -58,20 +61,20 @@ public class Main {
 
         long startTime = System.currentTimeMillis();
         FutureTask<Long> futureQuestion = new FutureTask<Long>(new SearchAndOpen(question));
-        new Thread(futureQuestion).start();
+        executorService.submit(futureQuestion);
 
         getKeywordsByBaidu(question);
         long execTime = System.currentTimeMillis() - startTime;
         System.out.println("获取关键字耗时: " + execTime + "毫秒");
 
         FutureTask<Long> futureQuestion0 = new FutureTask<Long>(new Search(question));
-        new Thread(futureQuestion0).start();
+        executorService.submit(futureQuestion0);
 
         FutureTask<Long> futureQuestion3 = new FutureTask<Long>(new Search(question, 3));
-        new Thread(futureQuestion3).start();
+        executorService.submit(futureQuestion3);
 
         FutureTask<Long> futureQuestion2 = new FutureTask<Long>(new Search(question, 2));
-        new Thread(futureQuestion2).start();
+        executorService.submit(futureQuestion2);
 
         while (!futureQuestion0.isDone()) {
         }
@@ -86,6 +89,10 @@ public class Main {
         printResultLow(question);
         execTime = System.currentTimeMillis() - startTime;
         System.out.println("答题总耗时: " + execTime + "毫秒");
+    }
+
+    public static ExecutorService getExecutorService() {
+        return executorService;
     }
 
     private static void getKeywordsByBaidu(Question question) {
