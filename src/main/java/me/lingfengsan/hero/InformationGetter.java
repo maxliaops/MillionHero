@@ -92,7 +92,7 @@ public class InformationGetter {
                 }
             }
             process.destroy();
-            int exitcode=process.waitFor();
+            int exitcode = process.waitFor();
 //            System.out.println("finish: "+exitcode);
             return question;
         } catch (IOException e) {
@@ -110,7 +110,7 @@ public class InformationGetter {
         Pattern pattern = Pattern.compile(strPatter);
         Matcher matcher = pattern.matcher(line);
         String strQuestionId;
-        while (matcher.find()) {
+        if (matcher.find()) {
             String str = matcher.group();
             strQuestionId = str.substring(19, str.length() - 1);
 //            System.out.println("getQuestionId=" + strQuestionId);
@@ -121,13 +121,14 @@ public class InformationGetter {
 
     private String getQuestionText(String line) {
 //        System.out.println("getQuestionText: line=" + line);
-        String strPatter = "timeLimit: 10000; text: ([\\s\\S]*)\\uff1f";
+//        String strPatter = "timeLimit: 10000; text: ([\\s\\S]*)\\uff1f";
+        String strPatter = "(?<=timeLimit: 10000; text: )[\\S\\s]+(?=\\uff1f)";
         Pattern pattern = Pattern.compile(strPatter);
         Matcher matcher = pattern.matcher(line);
         String strQuestionText;
-        while (matcher.find()) {
-            String str = matcher.group();
-            strQuestionText = str.substring(24, str.length());
+        if (matcher.find()) {
+            strQuestionText = matcher.group();
+//            strQuestionText = str.substring(24, str.length());
 //            System.out.println("getQuestionText=" + strQuestionText);
             return strQuestionText;
         }
@@ -140,7 +141,7 @@ public class InformationGetter {
         Pattern pattern = Pattern.compile(strPatter);
         Matcher matcher = pattern.matcher(line);
         String strOptionId;
-        while (matcher.find()) {
+        if (matcher.find()) {
             String str = matcher.group();
             strOptionId = str.substring(10, str.length() - 1);
 //            System.out.println("getQuestionId=" + strOptionId);
@@ -156,7 +157,7 @@ public class InformationGetter {
         Pattern pattern = Pattern.compile(strPatter);
         Matcher matcher = pattern.matcher(line);
         String strOptionText;
-        while (matcher.find()) {
+        if (matcher.find()) {
             String str = matcher.group();
             strOptionText = str.substring(18 + strOptionId.length(), str.length());
 //            System.out.println("getOptionText=" + strOptionText);
@@ -167,12 +168,29 @@ public class InformationGetter {
 
     private List<Question.Option> getOptions(String line) {
         List<Question.Option> options = new ArrayList<>();
-        String strPatter = "optionId: [0-9]+; text: ([\\s\\S]*); choosenUsers";
+
+        String strPatter = "optionList:([\\s\\S]*)percent0.0];";
         Pattern pattern = Pattern.compile(strPatter);
         Matcher matcher = pattern.matcher(line);
-        while (matcher.find()) {
-            String str = matcher.group();
-//            System.out.println(str);
+        String optionsStr = null;
+        if (matcher.find()) {
+            optionsStr = matcher.group();
+        }
+//        System.out.println(optionsStr);
+        if (optionsStr != null) {
+            String[] optionsArray = optionsStr.split("; choosenUsers: 0");
+            for (int i = 0; i < optionsArray.length; i++) {
+                String inputOptionStr = optionsArray[i];
+//                System.out.println(inputOptionStr);
+                if (inputOptionStr.contains("optionId")) {
+                    int optionId = getOptionId(inputOptionStr);
+                    String optionStr = getOptionText(inputOptionStr, optionId);
+                    Question.Option option = new Question.Option();
+                    option.setOptionId(optionId);
+                    option.setOptionText(optionStr);
+                    options.add(option);
+                }
+            }
         }
         return options;
     }
