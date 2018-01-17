@@ -15,7 +15,7 @@ import retrofit2.http.Query;
  */
 
 public interface KeywordsService {
-    int DEFAULT_TIMEOUT = 5;
+    int DEFAULT_TIMEOUT = 2;
     String BASE_URL = "http://zhannei.baidu.com/";
 
     @GET("api/customsearch/keywords")

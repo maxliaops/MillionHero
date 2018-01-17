@@ -6,6 +6,7 @@ import org.jsoup.nodes.Document;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.concurrent.Callable;
@@ -34,7 +35,10 @@ public class Search2 implements Callable {
 //        Document doc = Jsoup.parse(new URL(url).openStream(), "gb2312", url);
         String url = "http://www.baidu.com/s?tn=ichuner&lm=-1&word=" +
                 URLEncoder.encode(questionText + " " + optionText, "gb2312") + "&rn=50";
-        Document doc = Jsoup.parse(new URL(url).openStream(), "utf-8", url);
+        HttpURLConnection httpURLConnection = (HttpURLConnection) new URL(url).openConnection();
+        httpURLConnection.setConnectTimeout(1500);
+        httpURLConnection.setReadTimeout(1500);
+        Document doc = Jsoup.parse(httpURLConnection.getInputStream(), "utf-8", url);
         String result = doc.text();
 //        System.out.println(result);
         String keyword = Search.getKeyword(optionText);

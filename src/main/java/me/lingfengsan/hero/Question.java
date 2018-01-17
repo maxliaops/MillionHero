@@ -14,6 +14,7 @@ import me.lingfengsan.hero.keyword.Keyword;
 public class Question {
     private int questionId;
     private String questionText;
+    private List<Keyword> keywords;
     private List<Option> options;
 
     public int getQuestionId() {
@@ -30,6 +31,14 @@ public class Question {
 
     public void setQuestionText(String questionText) {
         this.questionText = questionText;
+    }
+
+    public List<Keyword> getKeywords() {
+        return this.keywords;
+    }
+
+    public void setKeywords(List<Keyword> keywords) {
+        this.keywords = keywords;
     }
 
     public List<Option> getOptions() {

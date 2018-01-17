@@ -4,6 +4,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -56,7 +57,10 @@ public class Search implements Callable {
         long startTime = System.currentTimeMillis();
         String url = "https://zhidao.baidu.com/search?lm=0&rn=10&pn=0&fr=search&ie=gbk&word=" +
                 URLEncoder.encode(question.getQuestionText(), "gb2312");
-        Document doc = Jsoup.parse(new URL(url).openStream(), "gb2312", url);
+        HttpURLConnection httpURLConnection = (HttpURLConnection) new URL(url).openConnection();
+        httpURLConnection.setConnectTimeout(1500);
+        httpURLConnection.setReadTimeout(1500);
+        Document doc = Jsoup.parse(httpURLConnection.getInputStream(), "gb2312", url);
         String result = doc.text();
 //        System.out.println(result);
         List<Question.Option> options = question.getOptions();
@@ -67,7 +71,7 @@ public class Search implements Callable {
             }
         }
         long execTime = System.currentTimeMillis() - startTime;
-//        System.out.println("H耗时: " + execTime + "毫秒");
+        System.out.println("H耗时: " + execTime + "毫秒");
         return Long.valueOf(1);
     }
 
@@ -75,7 +79,10 @@ public class Search implements Callable {
         long startTime = System.currentTimeMillis();
         String url = "http://www.baidu.com/s?tn=ichuner&lm=-1&word=" +
                 URLEncoder.encode(question.getQuestionText(), "gb2312") + "&rn=50";
-        Document doc = Jsoup.parse(new URL(url).openStream(), "utf-8", url);
+        HttpURLConnection httpURLConnection = (HttpURLConnection) new URL(url).openConnection();
+        httpURLConnection.setConnectTimeout(1500);
+        httpURLConnection.setReadTimeout(1500);
+        Document doc = Jsoup.parse(httpURLConnection.getInputStream(), "utf-8", url);
         String result = doc.text();
 //        System.out.println(result);
         List<Question.Option> options = question.getOptions();
@@ -86,7 +93,7 @@ public class Search implements Callable {
             }
         }
         long execTime = System.currentTimeMillis() - startTime;
-//        System.out.println("M耗时: " + execTime + "毫秒");
+        System.out.println("M耗时: " + execTime + "毫秒");
         return Long.valueOf(1);
     }
 
@@ -105,105 +112,6 @@ public class Search implements Callable {
 
         return count;
     }
-
-
-    Long search1(Question question) throws IOException {
-        // 记录开始时间
-        long startTime = System.currentTimeMillis();
-        // 记录结束时间
-        long endTime;
-        List<Question.Option> options = question.getOptions();
-        String questionText = question.getQuestionText();
-        int NUM_OF_ANSWERS = options.size();
-        //搜索
-        long countQuestion = 1;
-        long[] countQA = new long[NUM_OF_ANSWERS];
-        long[] countAnswer = new long[NUM_OF_ANSWERS];
-
-        int maxIndex = 0;
-        int minIndex = 0;
-
-        Search1[] searchQA = new Search1[NUM_OF_ANSWERS];
-        Search1[] searchAnswers = new Search1[NUM_OF_ANSWERS];
-        FutureTask<Long>[] futureQA = new FutureTask[NUM_OF_ANSWERS];
-        FutureTask<Long>[] futureAnswers = new FutureTask[NUM_OF_ANSWERS];
-        FutureTask<Long> futureQuestion = new FutureTask<Long>(new Search1(questionText));
-        new Thread(futureQuestion).start();
-//        System.out.println();
-        for (int i = 0; i < NUM_OF_ANSWERS; i++) {
-            String optionText = options.get(i).getOptionText();
-//            System.out.println(i + " " + optionText);
-            searchQA[i] = new Search1(questionText + " " + optionText);
-            searchAnswers[i] = new Search1(optionText);
-            futureQA[i] = new FutureTask<Long>(searchQA[i]);
-            futureAnswers[i] = new FutureTask<Long>(searchAnswers[i]);
-            new Thread(futureQA[i]).start();
-            new Thread(futureAnswers[i]).start();
-        }
-        try {
-            while (!futureQuestion.isDone()) {
-            }
-            countQuestion = futureQuestion.get();
-            for (int i = 0; i < NUM_OF_ANSWERS; i++) {
-                while (!futureQA[i].isDone()) {
-                }
-                countQA[i] = futureQA[i].get();
-                while (!futureAnswers[i].isDone()) {
-                }
-                countAnswer[i] = futureAnswers[i].get();
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-
-        float[] ans = new float[NUM_OF_ANSWERS];
-        for (int i = 0; i < NUM_OF_ANSWERS; i++) {
-            ans[i] = (float) countQA[i] / (float) (countQuestion * countAnswer[i]);
-            maxIndex = (ans[i] > ans[maxIndex]) ? i : maxIndex;
-            minIndex = (ans[i] < ans[minIndex]) ? i : minIndex;
-            String optionText = options.get(i).getOptionText();
-        }
-        //根据pmi值进行打印搜索结果
-        int[] rank = rank(ans, NUM_OF_ANSWERS);
-        for (int i : rank) {
-            String optionText = options.get(i).getOptionText();
-            System.out.print(optionText);
-            System.out.print(" ans:" + ans[i]);
-            System.out.print(" countQA:" + countQA[i]);
-            System.out.println(" countAnswer:" + countAnswer[i]);
-        }
-
-        System.out.println();
-        System.out.println("最大相关：" + options.get(maxIndex).getOptionText());
-        System.out.println("最小相关：" + options.get(minIndex).getOptionText());
-        endTime = System.currentTimeMillis();
-        long excTime = endTime - startTime;
-        System.out.println();
-        System.out.println("搜索时间：" + excTime + "ms");
-        System.out.println("-----------------------------");
-        return Long.valueOf(1);
-    }
-
-    /**
-     * @param floats pmi值
-     * @return 返回排序的rank
-     */
-    private static int[] rank(float[] floats, int num_of_answers) {
-        int[] rank = new int[num_of_answers];
-        float[] f = Arrays.copyOf(floats, num_of_answers);
-        Arrays.sort(f);
-        for (int i = 0; i < num_of_answers; i++) {
-            for (int j = 0; j < num_of_answers; j++) {
-                if (f[i] == floats[j]) {
-                    rank[i] = j;
-                }
-            }
-        }
-        return rank;
-    }
-
 
     Long search2(Question question) throws IOException {
         List<Question.Option> options = question.getOptions();
@@ -234,7 +142,7 @@ public class Search implements Callable {
             e.printStackTrace();
         }
         long execTime = System.currentTimeMillis() - startTime;
-//        System.out.println("3L耗时: " + execTime + "毫秒");
+        System.out.println("3L耗时: " + execTime + "毫秒");
         return Long.valueOf(1);
     }
 
@@ -243,8 +151,6 @@ public class Search implements Callable {
         switch (type) {
             case 0:
                 return search(question);
-            case 1:
-                return search1(question);
             case 2:
                 return search2(question);
             case 3:

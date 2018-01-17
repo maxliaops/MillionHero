@@ -6,6 +6,8 @@ import java.net.URLEncoder;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import me.lingfengsan.hero.keyword.Keyword;
+
 /**
  * Created by 618 on 2018/1/8.
  *
@@ -51,20 +53,38 @@ public class SearchAndOpen implements Callable {
     }
 
     private Long searchAndOpen(Question question) throws IOException {
+        String queryText2 = "";
+
         String queryText1 = question.getQuestionText();
-        String queryText2 = question.getQuestionText();
         List<Question.Option> options = question.getOptions();
-        for(Question.Option option : options) {
-            queryText2 = queryText2 + " " + option.getOptionText();
-        }
+//        queryText1 = queryText1 + " " + options.get(1).getOptionText();
+//        for(Question.Option option : options) {
+//            queryText1 = queryText1 + " " + option.getOptionText();
+//        }
 
         String url1 = null;
         String url2 = null;
         try {
+//            List<Keyword> keywords = question.getKeywords();
+//            if(keywords != null && keywords.size() > 0) {
+//                for(Question.Option option : options) {
+//                    keywords = option.getKeywords();
+//                    for (Keyword keyword : keywords) {
+//                        queryText2 = queryText2 + " " + keyword.getText();
+//                    }
+//                }
+//                url2 = "http://www.baidu.com/s?tn=ichuner&lm=-1&word=" +
+//                        URLEncoder.encode(queryText2, "gb2312") + "&rn=20";
+//                open(url2);
+//            } else {
+//                url1 = "http://www.baidu.com/s?tn=ichuner&lm=-1&word=" +
+//                        URLEncoder.encode(queryText1, "gb2312") + "&rn=20";
+//                open(url1);
+//            }
             url1 = "http://www.baidu.com/s?tn=ichuner&lm=-1&word=" +
-                    URLEncoder.encode(queryText2, "gb2312") + "&rn=20";
-            url2 = "https://zhidao.baidu.com/search?lm=0&rn=10&pn=0&fr=search&ie=gbk&word=" +
-                    URLEncoder.encode(queryText1, "gb2312");
+                    URLEncoder.encode(queryText1, "gb2312") + "&rn=20";
+//            url2 = "https://zhidao.baidu.com/search?lm=0&rn=10&pn=0&fr=search&ie=gbk&word=" +
+//                    URLEncoder.encode(queryText2, "gb2312");
 
             open(url1);
 //            open(url2);

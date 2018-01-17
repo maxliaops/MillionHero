@@ -26,6 +26,17 @@ public class KeywordsApi {
         keywordsService = KeywordsService.Creator.newHireMeService();
     }
 
+    public KeywordsResponse getKeywords2(String text) {
+        Call<KeywordsResponse> call = keywordsService.getKeywords(text);
+        try {
+            Response<KeywordsResponse> response = call.execute();
+            return response.body();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public List<Keyword> getKeywords(String text) {
         List<Keyword> keywords = new ArrayList<>();
         Keyword keyword2 = new Keyword();

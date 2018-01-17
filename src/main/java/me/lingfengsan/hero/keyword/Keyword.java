@@ -1,5 +1,8 @@
 package me.lingfengsan.hero.keyword;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by maxliaops on 18-1-14.
  */
@@ -10,7 +13,16 @@ public class Keyword {
     private float weight;
     private int count;
     private int count2;
-    private int count3;
+    private Map<String, Integer> countMap;
+
+    public Keyword() {
+        countMap = new HashMap<>();
+    }
+
+    public Keyword(String text) {
+        this.text = text;
+        countMap = new HashMap<>();
+    }
 
     public String getText() {
         return text;
@@ -52,11 +64,14 @@ public class Keyword {
         this.count2 = count2;
     }
 
-    public int getCount3() {
-        return count3;
+    public Integer getCount3(String key) {
+        return countMap.get(key);
     }
 
-    public void setCount3(int count3) {
-        this.count3 = count3;
+    public void setCount3(String key, int count) {
+        if (countMap == null) {
+            countMap = new HashMap<>();
+        }
+        countMap.put(key, count);
     }
 }
