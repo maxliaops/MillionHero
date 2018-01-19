@@ -58,9 +58,10 @@ public class SearchAndOpen implements Callable {
         String queryText1 = question.getQuestionText();
         List<Question.Option> options = question.getOptions();
 //        queryText1 = queryText1 + " " + options.get(1).getOptionText();
-//        for(Question.Option option : options) {
-//            queryText1 = queryText1 + " " + option.getOptionText();
-//        }
+        queryText2 = question.getQuestionText();
+        for(Question.Option option : options) {
+            queryText2 = queryText2 + " " + option.getOptionText();
+        }
 
         String url1 = null;
         String url2 = null;
@@ -83,11 +84,13 @@ public class SearchAndOpen implements Callable {
 //            }
             url1 = "http://www.baidu.com/s?tn=ichuner&lm=-1&word=" +
                     URLEncoder.encode(queryText1, "gb2312") + "&rn=20";
+            url2 = "http://www.baidu.com/s?tn=ichuner&lm=-1&word=" +
+                    URLEncoder.encode(queryText2, "gb2312") + "&rn=20";
 //            url2 = "https://zhidao.baidu.com/search?lm=0&rn=10&pn=0&fr=search&ie=gbk&word=" +
 //                    URLEncoder.encode(queryText2, "gb2312");
 
+            open(url2);
             open(url1);
-//            open(url2);
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }

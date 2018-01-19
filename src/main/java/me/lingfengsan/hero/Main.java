@@ -58,6 +58,7 @@ public class Main {
 
     private void checkQuestion(Question question) {
         String questionText = question.getQuestionText();
+        if(questionText == null) return;
         System.out.println();
         if (questionText.contains("不")) {
             System.out.println("--------发现否定词： 不");
@@ -135,6 +136,9 @@ public class Main {
         } catch (UnsupportedEncodingException e) {
 //            e.printStackTrace();
         }
+
+//        FutureTask<Long> futureQuestion = new FutureTask<Long>(new SearchAndOpen(question));
+//        executorService.submit(futureQuestion);
 
         for (String text : keywordGetterMap.keySet()) {
             List<Keyword> keywords = new ArrayList<>();

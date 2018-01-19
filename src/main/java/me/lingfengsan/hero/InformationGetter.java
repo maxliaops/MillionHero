@@ -119,19 +119,31 @@ public class InformationGetter {
         return 0;
     }
 
+    private String getQuestionText2(String line) {
+//        System.out.println("getQuestionText: line=" + line);
+        String strPatter = "(?<=timeLimit: 10000; text: )[\\S\\s]+(?=\\?)";
+        Pattern pattern = Pattern.compile(strPatter);
+        Matcher matcher = pattern.matcher(line);
+        String strQuestionText;
+        if (matcher.find()) {
+            strQuestionText = matcher.group();
+            return strQuestionText;
+        }
+        System.out.println("getQuestionText: line=" + line);
+        return null;
+    }
+
     private String getQuestionText(String line) {
 //        System.out.println("getQuestionText: line=" + line);
-//        String strPatter = "timeLimit: 10000; text: ([\\s\\S]*)\\uff1f";
         String strPatter = "(?<=timeLimit: 10000; text: )[\\S\\s]+(?=\\uff1f)";
         Pattern pattern = Pattern.compile(strPatter);
         Matcher matcher = pattern.matcher(line);
         String strQuestionText;
         if (matcher.find()) {
             strQuestionText = matcher.group();
-//            strQuestionText = str.substring(24, str.length());
-//            System.out.println("getQuestionText=" + strQuestionText);
             return strQuestionText;
         }
+        System.out.println("getQuestionText: line=" + line);
         return null;
     }
 
@@ -207,6 +219,9 @@ public class InformationGetter {
             startTime = System.currentTimeMillis();
             int questionId = getQuestionId(line);
             String questionText = getQuestionText(line);
+            if(questionText == null) {
+                questionText = getQuestionText2(line);
+            }
             question.setQuestionId(questionId);
             question.setQuestionText(questionText);
             state = PARSE_PHASE_GET_QUESTION;
@@ -227,6 +242,9 @@ public class InformationGetter {
             int questionId = getQuestionId(line);
 //            System.out.println("questionId=" + questionId);
             String questionText = getQuestionText(line);
+            if(questionText == null) {
+                questionText = getQuestionText2(line);
+            }
             question.setQuestionId(questionId);
             question.setQuestionText(questionText);
             state = PARSE_PHASE_GET_QUESTION;
