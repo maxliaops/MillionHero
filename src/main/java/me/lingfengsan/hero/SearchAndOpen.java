@@ -89,7 +89,7 @@ public class SearchAndOpen implements Callable {
 //            url2 = "https://zhidao.baidu.com/search?lm=0&rn=10&pn=0&fr=search&ie=gbk&word=" +
 //                    URLEncoder.encode(queryText2, "gb2312");
 
-            open(url2);
+//            open(url2);
             open(url1);
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();

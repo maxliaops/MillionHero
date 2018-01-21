@@ -15,10 +15,10 @@ public class KeywordGetter implements Callable {
 
     private KeywordsResponse getKeywords(String text) {
         long startTime = System.currentTimeMillis();
-        KeywordsResponse keywordsResponse =  KeywordsApi.getInstance().getKeywords2(text);
+//        KeywordsResponse keywordsResponse =  KeywordsApi.getInstance().getKeywords2(text);
         long execTime = System.currentTimeMillis() - startTime;
 //        System.out.println("耗时: " + execTime + "毫秒");
-        return keywordsResponse;
+        return null;
     }
 
     @Override

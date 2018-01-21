@@ -1,8 +1,7 @@
 package me.lingfengsan.hero;
 
-import org.apdplat.search.JSoupBaiduSearcher;
-import org.apdplat.search.util.baidu.JsoupBaiduInfoUtil;
-
+import java.awt.Color;
+import java.awt.Font;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -16,13 +15,25 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
+import javax.swing.JFrame;
+import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.Highlighter;
+
+import me.lingfengsan.hero.highlight.UnderlineHighlighter;
+import me.lingfengsan.hero.highlight.WordSearcher;
 import me.lingfengsan.hero.keyword.Keyword;
 import me.lingfengsan.hero.keyword.KeywordGetter;
 import me.lingfengsan.hero.keyword.KeywordsApi;
 import me.lingfengsan.hero.keyword.KeywordsResponse;
+
+import org.fusesource.jansi.AnsiConsole;
+
+import static org.fusesource.jansi.Ansi.*;
+import static org.fusesource.jansi.Ansi.Color.*;
 
 /**
  * Created by 618 on 2018/1/8.
@@ -30,22 +41,69 @@ import me.lingfengsan.hero.keyword.KeywordsResponse;
  * @author lingfengsan
  */
 public class Main {
+    private static final int SIZE = 14;
+    private static final String FONT = "Dialog";
+
     public static final boolean Debug = false;
     private static ExecutorService executorService = Executors.newCachedThreadPool();
+    private int mode;
+    private JFrame frame;
+    private JTextPane textPane;
+    private JScrollPane scrollPane;
+    private Highlighter highlighter;
+    private WordSearcher searcher;
+    private String word;
+
+    public Main(int mode) {
+        this.mode = mode;
+        if (mode == 3) {
+            this.word = " ";
+            this.frame = new JFrame();
+            this.scrollPane = new JScrollPane();
+            this.textPane = new JTextPane();
+            highlighter = new UnderlineHighlighter(Color.YELLOW);
+            scrollPane.setViewportView(textPane);
+            textPane.setHighlighter(highlighter);
+            textPane.setBackground(Color.BLACK);
+            textPane.setForeground(new Color(0, 127, 0));
+            textPane.setFont(new Font(FONT, Font.PLAIN, SIZE));
+            searcher = new WordSearcher(textPane);
+//            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.add(scrollPane, "Center");
+            frame.setSize(400, 400);
+            frame.setVisible(true);
+            textPane.getDocument().addDocumentListener(new DocumentListener() {
+                @Override
+                public void insertUpdate(DocumentEvent evt) {
+//                    searcher.search(word);
+                }
+
+                @Override
+                public void removeUpdate(DocumentEvent evt) {
+//                    searcher.search(word);
+                }
+
+                @Override
+                public void changedUpdate(DocumentEvent evt) {
+                }
+            });
+        }
+    }
 
     public static void main(String[] args) throws IOException {
         String deviceId = null;
-        String mode = "2";
+        int mode = 2;
         int optionIndex = 1;
         if (args != null && args.length == 2) {
-            mode = args[0];
+            mode = Integer.parseInt(args[0]);
             optionIndex = Integer.parseInt(args[1]);
         }
         System.out.println("---------------------------------------------------");
         System.out.println("开始执行");
         BufferedReader bf = new BufferedReader(new InputStreamReader(System.in));
 
-        Main main = new Main();
+        Main main = new Main(mode);
+        AnsiConsole.systemInstall();
         while (true) {
             if (Debug) {
                 String str = bf.readLine();
@@ -59,7 +117,7 @@ public class Main {
                 }
             } else {
                 try {
-                    if ("3".equals(mode)) {
+                    if (mode == 3) {
                         main.run3(deviceId, optionIndex);
                     } else {
                         main.run2(deviceId);
@@ -76,13 +134,15 @@ public class Main {
         String questionText = question.getQuestionText();
         if (questionText == null) return;
         System.out.println();
+        String text = "";
         if (questionText.contains("不")) {
-            System.out.println("--------发现否定词： 不");
+            text = "--------发现否定词： 不";
         } else if (questionText.contains("没有")) {
-            System.out.println("--------发现否定词： 没有");
-        } else if (questionText.contains("喂")) {
-            System.out.println("--------发现否定词： 喂");
+            text = "--------发现否定词： 没有";
+        } else if (questionText.contains("未")) {
+            text = "--------发现否定词： 未";
         }
+        System.out.println(ansi().fg(WHITE).a(text).reset());
         System.out.println();
     }
 
@@ -103,7 +163,8 @@ public class Main {
         long startTime = System.currentTimeMillis();
         long execTime;
 
-        String keyword = options.get(index).getOptionText() + " " + question.getQuestionText();
+        String optionText = options.get(index).getOptionText();
+        String keyword = optionText + " " + question.getQuestionText();
         System.out.println("关键字：" + keyword);
         System.out.println();
         Search4 search = new Search4(keyword);
@@ -118,7 +179,19 @@ public class Main {
             e.printStackTrace();
         }
 
+        result = keyword + "\n" + result;
         System.out.print(result);
+        textPane.setText(result);
+        String optionKeyword = Search.getKeyword(optionText);
+        for (Question.Option option : options) {
+            String word = Search.getKeyword(option.getOptionText());
+            if (optionKeyword.equals(word)) {
+                searcher.search(word, Color.CYAN);
+            } else {
+                searcher.search(word, Color.YELLOW);
+            }
+        }
+//        System.out.println( ansi().fg(WHITE).a(result).reset() );
 
         execTime = System.currentTimeMillis() - startTime;
         System.out.println("答题总耗时: " + execTime + "毫秒");
@@ -161,33 +234,37 @@ public class Main {
         Map<String, Search3> searchMap = new HashMap<>();
         Map<String, FutureTask<String>> futureSearchMap = new HashMap<>();
         try {
-            String url = String.format(Search3.URL_BAIDU_ZHIDAO, URLEncoder.encode(question
-                    .getQuestionText(), "gb2312"));
-            Search3 search = new Search3(url, "gb2312");
-            FutureTask<String> futureSearchTask = new FutureTask<String>(search);
-            searchMap.put(Search3.SEARCH_TYPE_HIGH, search);
-            futureSearchMap.put(Search3.SEARCH_TYPE_HIGH, futureSearchTask);
-            executorService.submit(futureSearchTask);
+            String url = null;
+            Search3 search = null;
+            FutureTask<String> futureSearchTask = null;
 
-            url = String.format(Search3.URL_BAIDU_HOME, URLEncoder.encode(question
-                    .getQuestionText(), "gb2312"));
+//            url = String.format(Search3.URL_BAIDU_ZHIDAO, URLEncoder.encode(question
+//                    .getQuestionText(), "gb2312"));
+//            search = new Search3(url, "gb2312");
+//            futureSearchTask = new FutureTask<String>(search);
+//            searchMap.put(Search3.SEARCH_TYPE_HIGH, search);
+//            futureSearchMap.put(Search3.SEARCH_TYPE_HIGH, futureSearchTask);
+//            executorService.submit(futureSearchTask);
+
+            url = String.format(Search3.URL_SOUGOU_HOME, URLEncoder.encode(question
+                    .getQuestionText(), "utf-8"));
             search = new Search3(url, "utf-8");
             futureSearchTask = new FutureTask<String>(search);
             searchMap.put(Search3.SEARCH_TYPE_MIDDLE, search);
             futureSearchMap.put(Search3.SEARCH_TYPE_MIDDLE, futureSearchTask);
             executorService.submit(futureSearchTask);
 
-            for (Question.Option option : options) {
-                String optionText = option.getOptionText();
-                String searchText = questionText + " " + optionText;
-                url = String.format(Search3.URL_BAIDU_HOME, URLEncoder.encode(searchText,
-                        "gb2312"));
-                search = new Search3(url, "utf-8");
-                FutureTask<String> futureTask = new FutureTask<String>(search);
-                searchMap.put(optionText, search);
-                futureSearchMap.put(optionText, futureTask);
-                executorService.submit(futureTask);
-            }
+//            for (Question.Option option : options) {
+//                String optionText = option.getOptionText();
+//                String searchText = questionText + " " + optionText;
+//                url = String.format(Search3.URL_BAIDU_HOME, URLEncoder.encode(searchText,
+//                        "gb2312"));
+//                search = new Search3(url, "utf-8");
+//                FutureTask<String> futureTask = new FutureTask<String>(search);
+//                searchMap.put(optionText, search);
+//                futureSearchMap.put(optionText, futureTask);
+//                executorService.submit(futureTask);
+//            }
         } catch (UnsupportedEncodingException e) {
 //            e.printStackTrace();
         }
@@ -202,7 +279,10 @@ public class Main {
             }
             try {
                 KeywordsResponse keywordsResponse = futureKeywordTask.get();
-                List<String> keywordList = keywordsResponse.getResult().getRes().getKeyword_list();
+                List<String> keywordList = null;
+                if (keywordsResponse != null) {
+                    keywordList = keywordsResponse.getResult().getRes().getKeyword_list();
+                }
 
                 if (keywordList == null) {
                     keywordList = new ArrayList<>();
@@ -234,25 +314,26 @@ public class Main {
         FutureTask<String> futureSearchTask;
         String result = null;
 
-        for (Question.Option option : options) {
-            String optionText = option.getOptionText();
-            futureSearchTask = futureSearchMap.get(optionText);
-            while (!futureSearchTask.isDone()) {
-            }
-            try {
-                result = futureSearchTask.get();
-            } catch (ExecutionException e) {
-//                e.printStackTrace();
-            }
-//            System.out.println(result);
-            for (Question.Option option1 : options) {
-                for (Keyword keyword : option1.getKeywords()) {
-                    int count = Search3.getCount(result, keyword.getText());
-                    keyword.setCount3(optionText, count);
-                }
-            }
-            printResultLow(question, optionText);
-        }
+//        for (Question.Option option : options) {
+//            String optionText = option.getOptionText();
+//            futureSearchTask = futureSearchMap.get(optionText);
+//            while (!futureSearchTask.isDone()) {
+//            }
+//            try {
+//                result = futureSearchTask.get();
+//            } catch (ExecutionException e) {
+////                e.printStackTrace();
+//            }
+////            System.out.println(result);
+//            for (Question.Option option1 : options) {
+//                for (Keyword keyword : option1.getKeywords()) {
+//                    int count = Search3.getCount(result, keyword.getText());
+//                    keyword.setCount3(optionText, count);
+//                }
+//            }
+//            printResultLow(question, optionText);
+//        }
+//        System.out.println("-------------------------------------------------");
 
         futureSearchTask = futureSearchMap.get(Search3.SEARCH_TYPE_MIDDLE);
         while (!futureSearchTask.isDone()) {
@@ -270,22 +351,22 @@ public class Main {
         }
         printResultMiddle(question);
 
-        futureSearchTask = futureSearchMap.get(Search3.SEARCH_TYPE_HIGH);
-        while (!futureSearchTask.isDone()) {
-        }
-        result = null;
-        try {
-            result = futureSearchTask.get();
-        } catch (ExecutionException e) {
-//            e.printStackTrace();
-        }
-        for (Question.Option option : options) {
-            for (Keyword keyword : option.getKeywords()) {
-                int count = Search3.getCount(result, keyword.getText());
-                keyword.setCount(count);
-            }
-        }
-        printResultHigh(question);
+//        futureSearchTask = futureSearchMap.get(Search3.SEARCH_TYPE_HIGH);
+//        while (!futureSearchTask.isDone()) {
+//        }
+//        result = null;
+//        try {
+//            result = futureSearchTask.get();
+//        } catch (ExecutionException e) {
+////            e.printStackTrace();
+//        }
+//        for (Question.Option option : options) {
+//            for (Keyword keyword : option.getKeywords()) {
+//                int count = Search3.getCount(result, keyword.getText());
+//                keyword.setCount(count);
+//            }
+//        }
+//        printResultHigh(question);
 
         execTime = System.currentTimeMillis() - startTime;
         System.out.println("答题总耗时: " + execTime + "毫秒");

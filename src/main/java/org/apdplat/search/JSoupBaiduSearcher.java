@@ -66,8 +66,8 @@ public class JSoupBaiduSearcher extends AbstractBaiduSearcher{
         List<Webpage> webpages = new ArrayList<>();
         try {
             HttpURLConnection httpURLConnection = (HttpURLConnection) new URL(url).openConnection();
-            httpURLConnection.setConnectTimeout(2000);
-            httpURLConnection.setReadTimeout(2000);
+            httpURLConnection.setConnectTimeout(5000);
+            httpURLConnection.setReadTimeout(5000);
             Document document = Jsoup.parse(httpURLConnection.getInputStream(), "utf-8", url);
             
             //获取搜索结果数目

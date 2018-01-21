@@ -24,6 +24,7 @@ public class Search3 implements Callable {
             ".com/search?lm=0&rn=10&pn=0&fr=search&ie=gbk&word=%s";
     public final static String URL_BAIDU_HOME = "http://www.baidu" +
             ".com/s?tn=ichuner&rn=20&lm=-1&word=%s";
+    public final static String URL_SOUGOU_HOME = "https://www.sogou.com/web?query=%s&ie=utf8";
 
     private final String url;
     private final String charsetName;
@@ -36,8 +37,8 @@ public class Search3 implements Callable {
     String search(String url, String charsetName) throws IOException {
         long startTime = System.currentTimeMillis();
         HttpURLConnection httpURLConnection = (HttpURLConnection) new URL(url).openConnection();
-        httpURLConnection.setConnectTimeout(2000);
-        httpURLConnection.setReadTimeout(2000);
+        httpURLConnection.setConnectTimeout(5000);
+        httpURLConnection.setReadTimeout(5000);
         Document doc = Jsoup.parse(httpURLConnection.getInputStream(), charsetName, url);
         String result = doc.text();
         long execTime = System.currentTimeMillis() - startTime;
