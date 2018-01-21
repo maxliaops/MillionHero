@@ -1,5 +1,8 @@
 package me.lingfengsan.hero;
 
+import org.apdplat.search.JSoupBaiduSearcher;
+import org.apdplat.search.util.baidu.JsoupBaiduInfoUtil;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -13,6 +16,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import me.lingfengsan.hero.keyword.Keyword;
 import me.lingfengsan.hero.keyword.KeywordGetter;
@@ -30,8 +35,11 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         String deviceId = null;
-        if(args != null && args.length == 1) {
-            deviceId = args[0];
+        String mode = "2";
+        int optionIndex = 1;
+        if (args != null && args.length == 2) {
+            mode = args[0];
+            optionIndex = Integer.parseInt(args[1]);
         }
         System.out.println("---------------------------------------------------");
         System.out.println("开始执行");
@@ -51,7 +59,11 @@ public class Main {
                 }
             } else {
                 try {
-                    main.run2(deviceId);
+                    if ("3".equals(mode)) {
+                        main.run3(deviceId, optionIndex);
+                    } else {
+                        main.run2(deviceId);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                     System.out.println("error");
@@ -62,7 +74,7 @@ public class Main {
 
     private void checkQuestion(Question question) {
         String questionText = question.getQuestionText();
-        if(questionText == null) return;
+        if (questionText == null) return;
         System.out.println();
         if (questionText.contains("不")) {
             System.out.println("--------发现否定词： 不");
@@ -73,6 +85,45 @@ public class Main {
         }
         System.out.println();
     }
+
+    private void test() {
+//        JSoupBaiduSearcher.main(null);
+    }
+
+    private void run3(String deviceId, int index) throws InterruptedException, UnsupportedEncodingException {
+        InformationGetter informationGetter = new InformationGetter(deviceId);
+        Question question = informationGetter.getQuestionAndAnswers();
+//        System.out.println(question.getQuestionId() + ". " + question.getQuestionText());
+        List<Question.Option> options = question.getOptions();
+//        for (Question.Option option : options) {
+//            System.out.println(option.getOptionText());
+//        }
+        checkQuestion(question);
+
+        long startTime = System.currentTimeMillis();
+        long execTime;
+
+        String keyword = options.get(index).getOptionText() + " " + question.getQuestionText();
+        System.out.println("关键字：" + keyword);
+        System.out.println();
+        Search4 search = new Search4(keyword);
+        FutureTask<String> futureSearchTask = new FutureTask<String>(search);
+        executorService.submit(futureSearchTask);
+        while (!futureSearchTask.isDone()) {
+        }
+        String result = null;
+        try {
+            result = futureSearchTask.get();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        System.out.print(result);
+
+        execTime = System.currentTimeMillis() - startTime;
+        System.out.println("答题总耗时: " + execTime + "毫秒");
+    }
+
 
     private void run2(String deviceId) throws InterruptedException {
         InformationGetter informationGetter = new InformationGetter(deviceId);
