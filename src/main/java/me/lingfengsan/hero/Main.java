@@ -29,6 +29,10 @@ public class Main {
     private static ExecutorService executorService = Executors.newCachedThreadPool();
 
     public static void main(String[] args) throws IOException {
+        String deviceId = null;
+        if(args != null && args.length == 1) {
+            deviceId = args[0];
+        }
         System.out.println("---------------------------------------------------");
         System.out.println("开始执行");
         BufferedReader bf = new BufferedReader(new InputStreamReader(System.in));
@@ -47,7 +51,7 @@ public class Main {
                 }
             } else {
                 try {
-                    main.run2();
+                    main.run2(deviceId);
                 } catch (Exception e) {
                     e.printStackTrace();
                     System.out.println("error");
@@ -70,8 +74,8 @@ public class Main {
         System.out.println();
     }
 
-    private void run2() throws InterruptedException {
-        InformationGetter informationGetter = new InformationGetter();
+    private void run2(String deviceId) throws InterruptedException {
+        InformationGetter informationGetter = new InformationGetter(deviceId);
         Question question = informationGetter.getQuestionAndAnswers();
         System.out.println(question.getQuestionId() + ". " + question.getQuestionText());
         List<Question.Option> options = question.getOptions();
@@ -189,6 +193,7 @@ public class Main {
             } catch (ExecutionException e) {
 //                e.printStackTrace();
             }
+//            System.out.println(result);
             for (Question.Option option1 : options) {
                 for (Keyword keyword : option1.getKeywords()) {
                     int count = Search3.getCount(result, keyword.getText());
@@ -237,7 +242,7 @@ public class Main {
 
     private void run() throws InterruptedException {
 
-        InformationGetter informationGetter = new InformationGetter();
+        InformationGetter informationGetter = new InformationGetter(null);
         Question question = informationGetter.getQuestionAndAnswers();
         System.out.println(question.getQuestionId() + ". " + question.getQuestionText());
         List<Question.Option> options = question.getOptions();
@@ -470,9 +475,9 @@ public class Main {
                         break;
                 }
                 System.out.println(optionFlag + " ---------------");
-                if(optionText.equals(option.getOptionText())) {
-                    continue;
-                }
+//                if(optionText.equals(option.getOptionText())) {
+//                    continue;
+//                }
                 List<Keyword> keywords = option.getKeywords();
                 for (Keyword keyword : keywords) {
                     if (keyword.getCount3(optionText) != 0) {

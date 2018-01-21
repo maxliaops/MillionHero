@@ -32,16 +32,24 @@ public class InformationGetter {
             ".0, Option optionId: 192; text: 缅甸";
 
     Question question;
+    String deviceId;
     int state;
     long startTime;
     long endTime;
     int optionCount = 0;
 
-    public InformationGetter() {
+    public InformationGetter(String deviceId) {
+        this.deviceId = deviceId;
         this.question = new Question();
     }
 
     public Question getQuestionAndAnswers() {
+        String adbPath;
+        if(deviceId == null) {
+            adbPath = ADB_PATH;
+        } else {
+            adbPath = ADB_PATH + " -s " + deviceId;
+        }
         Process process = null;
         String questionText;
         int questionId = 0;
@@ -49,10 +57,10 @@ public class InformationGetter {
         optionCount = 0;
 //        System.out.print("0->");
         try {
-            process = Runtime.getRuntime().exec(ADB_PATH
+            process = Runtime.getRuntime().exec(adbPath
                     + " shell logcat -c");
             process.waitFor();
-            process = Runtime.getRuntime().exec(ADB_PATH
+            process = Runtime.getRuntime().exec(adbPath
                     + " shell logcat -s FantasyLiveManager");
 
             BufferedReader bufferedReader = new BufferedReader(
