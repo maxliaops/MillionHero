@@ -45,12 +45,13 @@ public class KeywordGetter implements Callable {
         } else {
             List<Word> words = WordSegmenter.seg(text);
             PartOfSpeechTagging.process(words);
-//            System.out.println(words);
+            System.out.println(words);
             keywordList = new ArrayList<>();
             for (Word word : words) {
-                if (word.getPartOfSpeech().getPos().contains("n")) {
-                    keywordList.add(word.getText());
-                }
+                keywordList.add(word.getText());
+//                if (word.getPartOfSpeech().getPos().contains("n")) {
+//                    keywordList.add(word.getText());
+//                }
             }
         }
         long execTime = System.currentTimeMillis() - startTime;

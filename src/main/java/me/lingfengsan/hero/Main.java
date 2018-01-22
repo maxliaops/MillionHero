@@ -25,6 +25,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Highlighter;
 
+import me.lingfengsan.hero.highlight.Dialog;
 import me.lingfengsan.hero.highlight.UnderlineHighlighter;
 import me.lingfengsan.hero.highlight.WordSearcher;
 import me.lingfengsan.hero.keyword.Keyword;
@@ -52,48 +53,18 @@ public class Main {
     public static final boolean Debug = false;
     private static ExecutorService executorService = Executors.newCachedThreadPool();
     private int mode;
-    private JFrame frame;
-    private JTextPane textPane;
-    private JScrollPane scrollPane;
-    private Highlighter highlighter;
-    private WordSearcher searcher;
-    private String word;
+    private List<Dialog> dialogs;
 
     public Main(int mode) {
         long startTime = System.currentTimeMillis();
         long execTime;
         this.mode = mode;
         if (mode == 3) {
-            this.word = " ";
-            this.frame = new JFrame();
-            this.scrollPane = new JScrollPane();
-            this.textPane = new JTextPane();
-            highlighter = new UnderlineHighlighter(Color.YELLOW);
-            scrollPane.setViewportView(textPane);
-            textPane.setHighlighter(highlighter);
-//            textPane.setBackground(Color.BLACK);
-//            textPane.setForeground(new Color(0, 127, 0));
-            textPane.setFont(new Font(FONT, Font.PLAIN, SIZE));
-            searcher = new WordSearcher(textPane);
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.add(scrollPane, "Center");
-            frame.setSize(400, 400);
-            frame.setVisible(true);
-            textPane.getDocument().addDocumentListener(new DocumentListener() {
-                @Override
-                public void insertUpdate(DocumentEvent evt) {
-//                    searcher.search(word);
-                }
-
-                @Override
-                public void removeUpdate(DocumentEvent evt) {
-//                    searcher.search(word);
-                }
-
-                @Override
-                public void changedUpdate(DocumentEvent evt) {
-                }
-            });
+            dialogs = new ArrayList<>();
+            for (int i = 0; i < 3; i++) {
+                Dialog dialog = new Dialog(i);
+                dialogs.add(dialog);
+            }
         }
         if (mode == 2 || mode == 3) {
             List<Word> words = WordSegmenter.seg("杨尚川是APDPlat应用级产品开发平台的作者");
@@ -107,10 +78,8 @@ public class Main {
     public static void main(String[] args) throws IOException {
         String deviceId = null;
         int mode = 2;
-        int optionIndex = 1;
-        if (args != null && args.length == 2) {
+        if (args != null && args.length == 1) {
             mode = Integer.parseInt(args[0]);
-            optionIndex = Integer.parseInt(args[1]);
         }
         System.out.println("---------------------------------------------------");
         System.out.println("开始执行");
@@ -132,7 +101,7 @@ public class Main {
             } else {
                 try {
                     if (mode == 3) {
-                        main.run3(deviceId, optionIndex);
+                        main.run3(deviceId);
                     } else {
                         main.run2(deviceId);
                     }
@@ -160,63 +129,28 @@ public class Main {
         System.out.println();
     }
 
-    private String filterResult(String line) {
-        String result;
-        String strPatter = "更多关于([\\s\\S]*)的问题";
-        Pattern pattern = Pattern.compile(strPatter);
-        Matcher matcher = pattern.matcher(line);
-        result = matcher.replaceAll("");
-        return result;
-    }
-
-    private void run3(String deviceId, int index) throws InterruptedException,
+    private void run3(String deviceId) throws InterruptedException,
             UnsupportedEncodingException {
         InformationGetter informationGetter = new InformationGetter(deviceId);
         Question question = informationGetter.getQuestionAndAnswers();
-//        System.out.println(question.getQuestionId() + ". " + question.getQuestionText());
+        System.out.println(question.getQuestionId() + ". " + question.getQuestionText());
         List<Question.Option> options = question.getOptions();
-//        for (Question.Option option : options) {
-//            System.out.println(option.getOptionText());
-//        }
+        for (Question.Option option : options) {
+            System.out.println(option.getOptionText());
+        }
         checkQuestion(question);
 
         long startTime = System.currentTimeMillis();
         long execTime;
 
-        String optionText = options.get(index).getOptionText();
-        String keyword = optionText + " " + question.getQuestionText();
-        System.out.println("关键字：" + keyword);
-        System.out.println();
-        Search4 search = new Search4(keyword);
-        FutureTask<String> futureSearchTask = new FutureTask<String>(search);
-        executorService.submit(futureSearchTask);
-        while (!futureSearchTask.isDone()) {
+        Search4 search;
+        FutureTask<String> futureSearchTask;
+        for (int i = 0; i < 3; i++) {
+            Dialog dialog = dialogs.get(i);
+            search = new Search4(question, dialog);
+            futureSearchTask = new FutureTask<String>(search);
+            executorService.submit(futureSearchTask);
         }
-        String result = null;
-        try {
-            result = futureSearchTask.get();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-//        System.out.print(result);
-        result = filterResult(result);
-        result = keyword + "\n" + result;
-//        System.out.print(result);
-        textPane.setText(result);
-        String optionKeyword = Search.getKeyword(optionText);
-        for (Question.Option option : options) {
-            String word = Search.getKeyword(option.getOptionText());
-            if (optionKeyword.equals(word)) {
-                searcher.search(word, Color.GREEN);
-            } else {
-                searcher.search(word, Color.YELLOW);
-            }
-        }
-        List<String> questionKeywords = KeywordGetter.getKeywords(question.getQuestionText(), 2);
-        for (String word : questionKeywords) {
-            searcher.search(word, Color.CYAN);
-        }
-//        System.out.println( ansi().fg(WHITE).a(result).reset() );
 
         execTime = System.currentTimeMillis() - startTime;
         System.out.println("答题总耗时: " + execTime + "毫秒");
