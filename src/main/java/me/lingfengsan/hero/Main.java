@@ -15,6 +15,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
@@ -30,6 +32,9 @@ import me.lingfengsan.hero.keyword.KeywordGetter;
 import me.lingfengsan.hero.keyword.KeywordsApi;
 import me.lingfengsan.hero.keyword.KeywordsResponse;
 
+import org.apdplat.word.WordSegmenter;
+import org.apdplat.word.segmentation.Word;
+import org.apdplat.word.tagging.PartOfSpeechTagging;
 import org.fusesource.jansi.AnsiConsole;
 
 import static org.fusesource.jansi.Ansi.*;
@@ -41,7 +46,7 @@ import static org.fusesource.jansi.Ansi.Color.*;
  * @author lingfengsan
  */
 public class Main {
-    private static final int SIZE = 14;
+    private static final int SIZE = 18;
     private static final String FONT = "Dialog";
 
     public static final boolean Debug = false;
@@ -55,6 +60,8 @@ public class Main {
     private String word;
 
     public Main(int mode) {
+        long startTime = System.currentTimeMillis();
+        long execTime;
         this.mode = mode;
         if (mode == 3) {
             this.word = " ";
@@ -64,11 +71,11 @@ public class Main {
             highlighter = new UnderlineHighlighter(Color.YELLOW);
             scrollPane.setViewportView(textPane);
             textPane.setHighlighter(highlighter);
-            textPane.setBackground(Color.BLACK);
-            textPane.setForeground(new Color(0, 127, 0));
+//            textPane.setBackground(Color.BLACK);
+//            textPane.setForeground(new Color(0, 127, 0));
             textPane.setFont(new Font(FONT, Font.PLAIN, SIZE));
             searcher = new WordSearcher(textPane);
-//            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.add(scrollPane, "Center");
             frame.setSize(400, 400);
             frame.setVisible(true);
@@ -88,6 +95,13 @@ public class Main {
                 }
             });
         }
+        if (mode == 2 || mode == 3) {
+            List<Word> words = WordSegmenter.seg("杨尚川是APDPlat应用级产品开发平台的作者");
+            PartOfSpeechTagging.process(words);
+        }
+        execTime = System.currentTimeMillis() - startTime;
+        System.out.println();
+        System.out.println("初始化耗时: " + execTime + "毫秒");
     }
 
     public static void main(String[] args) throws IOException {
@@ -146,11 +160,17 @@ public class Main {
         System.out.println();
     }
 
-    private void test() {
-//        JSoupBaiduSearcher.main(null);
+    private String filterResult(String line) {
+        String result;
+        String strPatter = "更多关于([\\s\\S]*)的问题";
+        Pattern pattern = Pattern.compile(strPatter);
+        Matcher matcher = pattern.matcher(line);
+        result = matcher.replaceAll("");
+        return result;
     }
 
-    private void run3(String deviceId, int index) throws InterruptedException, UnsupportedEncodingException {
+    private void run3(String deviceId, int index) throws InterruptedException,
+            UnsupportedEncodingException {
         InformationGetter informationGetter = new InformationGetter(deviceId);
         Question question = informationGetter.getQuestionAndAnswers();
 //        System.out.println(question.getQuestionId() + ". " + question.getQuestionText());
@@ -178,18 +198,23 @@ public class Main {
         } catch (ExecutionException e) {
             e.printStackTrace();
         }
-
+//        System.out.print(result);
+        result = filterResult(result);
         result = keyword + "\n" + result;
-        System.out.print(result);
+//        System.out.print(result);
         textPane.setText(result);
         String optionKeyword = Search.getKeyword(optionText);
         for (Question.Option option : options) {
             String word = Search.getKeyword(option.getOptionText());
             if (optionKeyword.equals(word)) {
-                searcher.search(word, Color.CYAN);
+                searcher.search(word, Color.GREEN);
             } else {
                 searcher.search(word, Color.YELLOW);
             }
+        }
+        List<String> questionKeywords = KeywordGetter.getKeywords(question.getQuestionText(), 2);
+        for (String word : questionKeywords) {
+            searcher.search(word, Color.CYAN);
         }
 //        System.out.println( ansi().fg(WHITE).a(result).reset() );
 
@@ -215,16 +240,24 @@ public class Main {
         executorService.submit(futureQuestion);
 
         Map<String, KeywordGetter> keywordGetterMap = new HashMap<>();
-        Map<String, FutureTask<KeywordsResponse>> futureKeywordMap = new HashMap<>();
+        Map<String, FutureTask<List<String>>> futureKeywordMap = new HashMap<>();
         String questionText = question.getQuestionText();
-        keywordGetterMap.put(questionText, new KeywordGetter(questionText));
+        int keywordMode = 1;
+        if (mode == 0) {
+            keywordMode = 0;
+        } else if (mode == 2) {
+            keywordMode = 2;
+        } else {
+            keywordMode = 1;
+        }
+        keywordGetterMap.put(questionText, new KeywordGetter(questionText, keywordMode));
         for (Question.Option option : options) {
             String optionText = option.getOptionText();
-            keywordGetterMap.put(optionText, new KeywordGetter(optionText));
+            keywordGetterMap.put(optionText, new KeywordGetter(optionText, keywordMode));
         }
         for (String text : keywordGetterMap.keySet()) {
             KeywordGetter keywordGetter = keywordGetterMap.get(text);
-            FutureTask<KeywordsResponse> futureKeywordTask = new FutureTask<KeywordsResponse>
+            FutureTask<List<String>> futureKeywordTask = new FutureTask<List<String>>
                     (keywordGetter);
             futureKeywordMap.put(text, futureKeywordTask);
             executorService.submit(futureKeywordTask);
@@ -274,15 +307,11 @@ public class Main {
 
         for (String text : keywordGetterMap.keySet()) {
             List<Keyword> keywords = new ArrayList<>();
-            FutureTask<KeywordsResponse> futureKeywordTask = futureKeywordMap.get(text);
+            FutureTask<List<String>> futureKeywordTask = futureKeywordMap.get(text);
             while (!futureKeywordTask.isDone()) {
             }
             try {
-                KeywordsResponse keywordsResponse = futureKeywordTask.get();
-                List<String> keywordList = null;
-                if (keywordsResponse != null) {
-                    keywordList = keywordsResponse.getResult().getRes().getKeyword_list();
-                }
+                List<String> keywordList = futureKeywordTask.get();
 
                 if (keywordList == null) {
                     keywordList = new ArrayList<>();
@@ -293,6 +322,7 @@ public class Main {
                     keyword.setText(keywordText);
                     keywords.add(keyword);
                 }
+//                System.out.println(text);
                 if (text.equals(questionText)) {
                     question.setKeywords(keywords);
                 } else {
@@ -300,12 +330,13 @@ public class Main {
                         String optionText = option.getOptionText();
                         if (text.equals(optionText)) {
                             keywords.add(new Keyword(optionText));
+//                            System.out.println(text);
                             option.setKeywords(keywords);
                         }
                     }
                 }
             } catch (ExecutionException e) {
-//                e.printStackTrace();
+                e.printStackTrace();
                 continue;
             }
         }

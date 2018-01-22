@@ -114,7 +114,7 @@ public class JSoupBaiduSearcher extends AbstractBaiduSearcher{
                 }
                 String summaryText = "";
                 if(summaryElement != null){
-                    summaryText = summaryElement.text(); 
+                    summaryText = summaryElement.text();
                 }
                 LOG.debug(summaryText);                
                 
