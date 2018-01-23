@@ -55,7 +55,7 @@ public class KeywordGetter implements Callable {
             }
         }
         long execTime = System.currentTimeMillis() - startTime;
-        System.out.println("耗时: " + execTime + "毫秒");
+//        System.out.println("耗时: " + execTime + "毫秒");
         return keywordList;
     }
 

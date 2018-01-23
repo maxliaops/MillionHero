@@ -29,6 +29,7 @@ public class Search4 implements Callable {
     }
 
     public String search(Question question, Dialog dialog) {
+        long startTime = System.currentTimeMillis();
         int index = dialog.getIndex();
         List<Question.Option> options = question.getOptions();
         Question.Option targetOption = options.get(index);
@@ -73,6 +74,8 @@ public class Search4 implements Callable {
                 dialog.getSearcher().search(word, Color.CYAN);
             }
         }
+        long execTime = System.currentTimeMillis() - startTime;
+        System.out.println("耗时: " + execTime + "毫秒");
         return result;
     }
 
