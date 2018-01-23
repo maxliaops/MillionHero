@@ -6,6 +6,7 @@ import org.apdplat.search.Searcher;
 import org.apdplat.search.Webpage;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
@@ -31,8 +32,8 @@ public class Search4 implements Callable {
         int index = dialog.getIndex();
         List<Question.Option> options = question.getOptions();
         Question.Option targetOption = options.get(index);
-        String optionText = targetOption.getOptionText();
-        String keyword = optionText + " " + question.getQuestionText();
+        String targetOptionText = Search.getKeyword(targetOption.getOptionText());
+        String keyword = targetOptionText + " " + question.getQuestionText();
         String result = "";
         Searcher searcher = new JSoupBaiduSearcher();
         SearchResult searchResult = searcher.search(keyword, 1);
@@ -48,13 +49,22 @@ public class Search4 implements Callable {
             result = filterResult(result);
             result = keyword + "\n" + result;
             dialog.getTextPane().setText(result);
-            String optionKeyword = Search.getKeyword(optionText);
+            List<String> keywords = null;
             for (Question.Option option : options) {
-                String word = Search.getKeyword(option.getOptionText());
-                if (optionKeyword.equals(word)) {
-                    dialog.getSearcher().search(word, Color.YELLOW);
+                String optionText = Search.getKeyword(option.getOptionText());
+                keywords = KeywordGetter.getKeywords(optionText, 2);
+                if (keywords == null) {
+                    keywords = new ArrayList<>();
+                }
+                keywords.add(optionText);
+                if (targetOptionText.equals(optionText)) {
+                    for (String word : keywords) {
+                        dialog.getSearcher().search(word, Color.YELLOW);
+                    }
                 } else {
-                    dialog.getSearcher().search(word, Color.GREEN);
+                    for (String word : keywords) {
+                        dialog.getSearcher().search(word, Color.GREEN);
+                    }
                 }
             }
             List<String> questionKeywords = KeywordGetter.getKeywords(question.getQuestionText(),

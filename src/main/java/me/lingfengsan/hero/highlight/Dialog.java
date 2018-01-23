@@ -37,7 +37,8 @@ public class Dialog {
         searcher = new WordSearcher(textPane);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.add(scrollPane, "Center");
-        frame.setSize(400, 400);
+        frame.setLocation(1220, 40 + 340 * index);
+        frame.setSize(700, 340);
         frame.setVisible(true);
         textPane.getDocument().addDocumentListener(new DocumentListener() {
             @Override
