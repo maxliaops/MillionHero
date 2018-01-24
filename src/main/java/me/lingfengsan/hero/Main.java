@@ -1,7 +1,10 @@
 package me.lingfengsan.hero;
 
-import java.awt.Color;
-import java.awt.Font;
+import org.apdplat.word.WordSegmenter;
+import org.apdplat.word.segmentation.Word;
+import org.apdplat.word.tagging.PartOfSpeechTagging;
+import org.fusesource.jansi.AnsiConsole;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -15,31 +18,14 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.swing.JFrame;
-import javax.swing.JScrollPane;
-import javax.swing.JTextPane;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.Highlighter;
 
 import me.lingfengsan.hero.highlight.Dialog;
-import me.lingfengsan.hero.highlight.UnderlineHighlighter;
-import me.lingfengsan.hero.highlight.WordSearcher;
 import me.lingfengsan.hero.keyword.Keyword;
 import me.lingfengsan.hero.keyword.KeywordGetter;
 import me.lingfengsan.hero.keyword.KeywordsApi;
-import me.lingfengsan.hero.keyword.KeywordsResponse;
 
-import org.apdplat.word.WordSegmenter;
-import org.apdplat.word.segmentation.Word;
-import org.apdplat.word.tagging.PartOfSpeechTagging;
-import org.fusesource.jansi.AnsiConsole;
-
-import static org.fusesource.jansi.Ansi.*;
-import static org.fusesource.jansi.Ansi.Color.*;
+import static org.fusesource.jansi.Ansi.Color.WHITE;
+import static org.fusesource.jansi.Ansi.ansi;
 
 /**
  * Created by 618 on 2018/1/8.
@@ -213,7 +199,7 @@ public class Main {
 //            futureSearchMap.put(Search3.SEARCH_TYPE_HIGH, futureSearchTask);
 //            executorService.submit(futureSearchTask);
 
-            url = String.format(Search3.URL_SOUGOU_HOME, URLEncoder.encode(question
+            url = String.format(Search3.URL_BAIDU_HOME, URLEncoder.encode(question
                     .getQuestionText(), "utf-8"));
             search = new Search3(url, "utf-8");
             futureSearchTask = new FutureTask<String>(search);

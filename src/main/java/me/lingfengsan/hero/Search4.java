@@ -41,14 +41,14 @@ public class Search4 implements Callable {
         List<Webpage> webpages = searchResult.getWebpages();
         if (webpages != null) {
             for (Webpage webpage : webpages) {
-                result = result + "标题：" + webpage.getTitle() + "\n";
-                result = result + "摘要：" + webpage.getSummary() + "\n\n";
+                result = result + webpage.getTitle() + "\n";
+                result = result + webpage.getSummary() + "\n\n";
             }
         }
 
         if (result != null && result.length() > 0) {
             result = filterResult(result);
-            result = keyword + "\n" + result;
+            result = targetOptionText + "\n\n" + result;
             dialog.getTextPane().setText(result);
             List<String> keywords = null;
             for (Question.Option option : options) {
@@ -64,7 +64,7 @@ public class Search4 implements Callable {
                     }
                 } else {
                     for (String word : keywords) {
-                        dialog.getSearcher().search(word, Color.GREEN);
+//                        dialog.getSearcher().search(word, Color.GREEN);
                     }
                 }
             }
