@@ -38,13 +38,17 @@ public class Main {
 
     public static final boolean Debug = false;
     private static ExecutorService executorService = Executors.newCachedThreadPool();
+    private int platform;
     private int mode;
     private List<Dialog> dialogs;
+    private Map<String, Question> questionMap;
 
-    public Main(int mode) {
+    public Main(int platform, int mode) {
         long startTime = System.currentTimeMillis();
         long execTime;
+        this.platform = platform;
         this.mode = mode;
+        questionMap = new HashMap<>();
         if (mode == 3) {
             dialogs = new ArrayList<>();
             for (int i = 0; i < 3; i++) {
@@ -63,15 +67,20 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         String deviceId = null;
-        int mode = 2;
-        if (args != null && args.length == 1) {
-            mode = Integer.parseInt(args[0]);
+        int platform = 0;
+        int mode = 0;
+        if (args != null && args.length == 2) {
+            platform = Integer.parseInt(args[0]);
+            mode = Integer.parseInt(args[1]);
+        } else {
+            platform = 1;
+            mode = 2;
         }
         System.out.println("---------------------------------------------------");
         System.out.println("开始执行");
         BufferedReader bf = new BufferedReader(new InputStreamReader(System.in));
 
-        Main main = new Main(mode);
+        Main main = new Main(platform, mode);
         AnsiConsole.systemInstall();
         while (true) {
             if (Debug) {
@@ -79,7 +88,11 @@ public class Main {
                 System.out.println("开始执行");
                 try {
                     if (str.length() == 0) {
-                        main.run();
+                        if (mode == 3) {
+                            main.run3(deviceId);
+                        } else {
+                            main.run2(deviceId);
+                        }
                     }
                 } catch (Exception e) {
                     System.out.println("error");
@@ -117,9 +130,21 @@ public class Main {
 
     private void run3(String deviceId) throws InterruptedException,
             UnsupportedEncodingException {
-        InformationGetter informationGetter = new InformationGetter(deviceId);
-        Question question = informationGetter.getQuestionAndAnswers();
-        System.out.println(question.getQuestionId() + ". " + question.getQuestionText());
+        Question question = null;
+        if (platform == 2) {
+            HaoKanQuestionGetter questionGetter = new HaoKanQuestionGetter(deviceId);
+            question = questionGetter.getQuestionAndAnswers();
+        } else {
+            InformationGetter informationGetter = new InformationGetter(deviceId);
+            question = informationGetter.getQuestionAndAnswers();
+        }
+        String questionId = question.getQuestionId();
+        if(questionMap.containsKey(questionId)) {
+            return;
+        } else {
+            questionMap.put(questionId, question);
+        }
+        System.out.println(questionId + ". " + question.getQuestionText());
         List<Question.Option> options = question.getOptions();
         for (Question.Option option : options) {
             System.out.println(option.getOptionText());
@@ -144,9 +169,21 @@ public class Main {
 
 
     private void run2(String deviceId) throws InterruptedException {
-        InformationGetter informationGetter = new InformationGetter(deviceId);
-        Question question = informationGetter.getQuestionAndAnswers();
-        System.out.println(question.getQuestionId() + ". " + question.getQuestionText());
+        Question question = null;
+        if (platform == 2) {
+            HaoKanQuestionGetter questionGetter = new HaoKanQuestionGetter(deviceId);
+            question = questionGetter.getQuestionAndAnswers();
+        } else {
+            InformationGetter informationGetter = new InformationGetter(deviceId);
+            question = informationGetter.getQuestionAndAnswers();
+        }
+        String questionId = question.getQuestionId();
+        if(questionMap.containsKey(questionId)) {
+            return;
+        } else {
+            questionMap.put(questionId, question);
+        }
+        System.out.println(questionId + ". " + question.getQuestionText());
         List<Question.Option> options = question.getOptions();
         for (Question.Option option : options) {
             System.out.println(option.getOptionText());

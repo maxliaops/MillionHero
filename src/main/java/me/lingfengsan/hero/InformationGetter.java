@@ -112,7 +112,7 @@ public class InformationGetter {
         return null;
     }
 
-    private int getQuestionId(String line) {
+    private String getQuestionId(String line) {
 //        System.out.println("getQuestionId: line=" + line);
         String strPatter = "currentQuestionId: [0-9]+;";
         Pattern pattern = Pattern.compile(strPatter);
@@ -122,9 +122,9 @@ public class InformationGetter {
             String str = matcher.group();
             strQuestionId = str.substring(19, str.length() - 1);
 //            System.out.println("getQuestionId=" + strQuestionId);
-            return Integer.valueOf(strQuestionId);
+            return strQuestionId;
         }
-        return 0;
+        return null;
     }
 
     private String getQuestionText2(String line) {
@@ -225,7 +225,7 @@ public class InformationGetter {
                 && line.contains("optionId")
                 && line.contains("percent0.0];")) {
             startTime = System.currentTimeMillis();
-            int questionId = getQuestionId(line);
+            String questionId = getQuestionId(line);
             String questionText = getQuestionText(line);
             if(questionText == null) {
                 questionText = getQuestionText2(line);
@@ -247,7 +247,7 @@ public class InformationGetter {
                 || line.contains("status: 3; lastStatus: 2;"))) {
             startTime = System.currentTimeMillis();
 //            System.out.println(line);
-            int questionId = getQuestionId(line);
+            String questionId = getQuestionId(line);
 //            System.out.println("questionId=" + questionId);
             String questionText = getQuestionText(line);
             if(questionText == null) {

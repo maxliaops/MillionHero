@@ -12,16 +12,16 @@ import me.lingfengsan.hero.keyword.Keyword;
  */
 
 public class Question {
-    private int questionId;
+    private String questionId;
     private String questionText;
     private List<Keyword> keywords;
     private List<Option> options;
 
-    public int getQuestionId() {
+    public String getQuestionId() {
         return questionId;
     }
 
-    public void setQuestionId(int questionId) {
+    public void setQuestionId(String questionId) {
         this.questionId = questionId;
     }
 
